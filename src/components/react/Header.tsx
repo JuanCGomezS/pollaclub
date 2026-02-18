@@ -61,6 +61,7 @@ export default function Header() {
   };
 
   const displayName = userData?.displayName || user?.displayName || 'Usuario';
+  const email = userData?.email || user?.email || 'Usuario';
 
   if (loading) {
     return (
@@ -135,6 +136,7 @@ export default function Header() {
                   <p className="text-sm font-medium text-gray-900 truncate" title={displayName}>
                     {displayName}
                   </p>
+                  <p className="text-xs text-gray-500">{email}</p>
                 </div>
                 <div className="p-2">
                   <button
