@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+  Plantilla de correo para recuperación de contraseña (Firebase Auth).
+  Variables que reemplaza Firebase:
+  - %LINK%    = URL para restablecer la contraseña (obligatoria)
+  - %APP_NAME% = Nombre de la app (configurado en Firebase)
+  - %EMAIL%   = Correo del usuario que solicitó el restablecimiento
+  Copia el contenido del body (desde el primer <p>) en Firebase Console >
+  Authentication > Templates > Password reset > Customize action URL / body si admite HTML.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recupera tu contraseña - PollaClub</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      min-height: 100vh;
+      color: #1f2937;
+    }
+    .email-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .banner {
+      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .banner .sub {
+      margin: 6px 0 0;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.9);
+    }
+    .ball {
+      display: inline-block;
+      font-size: 2rem;
+      margin: 0 4px;
+      vertical-align: middle;
+    }
+    .content {
+      padding: 28px 24px 32px;
+    }
+    .content h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+      color: #111827;
+    }
+    .content p {
+      margin: 0 0 16px;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+    .cta-wrap {
+      text-align: center;
+      margin: 24px 0 0;
+    }
+    .cta {
+      display: inline-block;
+      padding: 14px 28px;
+      background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+      color: #fff !important;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+    .cta:hover {
+      opacity: 0.95;
+    }
+    .footer-note {
+      margin: 20px 0 0;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.8125rem;
+      color: #6b7280;
+    }
+    .highlight {
+      background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrap">
+    <div class="card">
+      <div class="banner">
+        <h1>⚽ %APP_NAME% ⚽</h1>
+        <p class="sub">Tu pizarra de pronósticos</p>
+      </div>
+      <div class="content">
+        <h2>¿Perdiste el partido de tu contraseña?</h2>
+        <p>
+          Hola,
+        </p>
+        <p>
+          Pediste restablecer la contraseña de tu cuenta <strong>%EMAIL%</strong> en %APP_NAME%.
+          Aquí está tu <span class="highlight">cambio táctico</span>: haz clic en el enlace de abajo para elegir una nueva contraseña.
+        </p>
+        <p>
+          <a href="%LINK%">%LINK%</a>
+        </p>
+        <p style="text-align: center; margin-top: 20px;">
+          <a href="%LINK%" class="cta">Restablecer contraseña</a>
+        </p>
+        <p>
+          Si no pediste este correo, ignóralo con tranquilidad: nadie ha entrado en tu cuenta.
+        </p>
+        <p class="footer-note">
+          Este enlace caduca en 1 hora. Si ya no funciona, vuelve a solicitar uno nuevo desde la app.
+          <br><br>
+          Gracias,<br>
+          El equipo de %APP_NAME%
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

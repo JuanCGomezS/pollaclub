@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { registerUser, loginUser } from '../../lib/auth';
+import { registerUser, loginUser, sendPasswordReset } from '../../lib/auth';
 import { getRoute } from '../../lib/utils';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [forgotPassword, setForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,6 +19,11 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
+      if (forgotPassword) {
+        await sendPasswordReset(email);
+        setResetSent(true);
+        return;
+      }
       if (isLogin) {
         await loginUser(email, password);
         window.location.href = getRoute('/groups');
@@ -46,10 +53,37 @@ export default function LoginForm() {
     }
   };
 
+  if (forgotPassword && resetSent) {
+    return (
+      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+        <div className="text-center mb-2 text-4xl" aria-hidden>⚽</div>
+        <h2 className="text-2xl font-bold text-center mb-3">¡Mensaje enviado!</h2>
+        <p className="text-gray-600 text-center mb-1">
+          Si hay una cuenta con <strong className="text-gray-800">{email}</strong>, te llegará un correo con el enlace
+          para restablecer tu contraseña.
+        </p>
+        <p className="text-gray-500 text-sm text-center mb-6">
+          Revisa también la carpeta de spam. El enlace caduca en 1 hora.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setForgotPassword(false);
+            setResetSent(false);
+            setError('');
+          }}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        >
+          Volver a iniciar sesión
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-center mb-6">
-        {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
+        {forgotPassword ? 'Recuperar contraseña' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
       </h2>
 
       {error && (
@@ -59,7 +93,7 @@ export default function LoginForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!isLogin && (
+        {!isLogin && !forgotPassword && (
           <div>
             <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
               Nombre
@@ -89,43 +123,78 @@ export default function LoginForm() {
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            minLength={6}
-          />
-        </div>
+        {!forgotPassword && (
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required={!forgotPassword}
+              minLength={6}
+            />
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
-          {loading ? 'Procesando...' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
+          {loading
+            ? 'Procesando...'
+            : forgotPassword
+              ? 'Enviar enlace de recuperación'
+              : isLogin
+                ? 'Iniciar Sesión'
+                : 'Registrarse'}
         </button>
       </form>
 
-      <div className="mt-4 text-center">
-        <button
-          type="button"
-          onClick={() => {
-            setIsLogin(!isLogin);
-            setError('');
-          }}
-          className="text-blue-600 hover:text-blue-800 text-sm"
-        >
-          {isLogin 
-            ? '¿No tienes cuenta? Regístrate' 
-            : '¿Ya tienes cuenta? Inicia sesión'}
-        </button>
+      <div className="mt-4 text-center space-y-2">
+        {isLogin && !forgotPassword && (
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                setForgotPassword(true);
+                setError('');
+              }}
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+        )}
+        {forgotPassword ? (
+          <button
+            type="button"
+            onClick={() => {
+              setForgotPassword(false);
+              setError('');
+            }}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            Volver a iniciar sesión
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError('');
+            }}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            {isLogin
+              ? '¿No tienes cuenta? Regístrate'
+              : '¿Ya tienes cuenta? Inicia sesión'}
+          </button>
+        )}
       </div>
     </div>
   );

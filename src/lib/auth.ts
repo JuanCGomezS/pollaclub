@@ -3,7 +3,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, setDoc, updateDoc, getDoc, getDocs, serverTimestamp, query, where, collection, deleteField } from 'firebase/firestore';
@@ -53,6 +54,18 @@ export async function loginUser(email: string, password: string): Promise<User> 
     return userCredential.user;
   } catch (error: any) {
     throw new Error(error.message || 'Error al iniciar sesión');
+  }
+}
+
+/**
+ * Envía un correo para restablecer la contraseña.
+ * Firebase envía el email con un enlace; el usuario restablece la contraseña desde ahí.
+ */
+export async function sendPasswordReset(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error: any) {
+    throw new Error(error.message || 'Error al enviar el correo de recuperación');
   }
 }
 
