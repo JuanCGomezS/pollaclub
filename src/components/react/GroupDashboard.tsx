@@ -58,7 +58,7 @@ export default function GroupDashboard() {
 
   const loadGroup = async () => {
     if (!groupId) return;
-    
+
     try {
       const user = getCurrentUser();
       if (!user) {
@@ -157,11 +157,10 @@ export default function GroupDashboard() {
               window.history.pushState({}, '', url.toString());
               setActiveTab('predictions');
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-              activeTab === 'predictions'
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'predictions'
                 ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
+              }`}
           >
             Pronósticos
           </button>
@@ -172,31 +171,28 @@ export default function GroupDashboard() {
               window.history.pushState({}, '', url.toString());
               setActiveTab('participants');
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-              activeTab === 'participants'
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'participants'
                 ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
+              }`}
           >
             Participantes
           </button>
-          {userIsAdmin && (
-            <button
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('tab', 'settings');
-                window.history.pushState({}, '', url.toString());
-                setActiveTab('settings');
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-                activeTab === 'settings'
-                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+
+          <button
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('tab', 'settings');
+              window.history.pushState({}, '', url.toString());
+              setActiveTab('settings');
+            }}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'settings'
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
-            >
-              Configuración
-            </button>
-          )}
+          >
+            Configuración
+          </button>
         </nav>
       </div>
 

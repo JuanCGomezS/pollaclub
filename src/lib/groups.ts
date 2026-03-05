@@ -16,6 +16,22 @@ import { db } from './firebase';
 import type { Group } from './types';
 
 /**
+ * Obtiene todos los grupos de una competición
+ */
+export async function getGroupsByCompetition(competitionId: string): Promise<Group[]> {
+  try {
+    const groupsQuery = query(
+      collection(db, 'groups'),
+      where('competitionId', '==', competitionId)
+    );
+    const snapshot = await getDocs(groupsQuery);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Group));
+  } catch (error: any) {
+    throw new Error(error.message || 'Error al obtener grupos de la competición');
+  }
+}
+
+/**
  * Obtiene un grupo por ID
  */
 export async function getGroup(groupId: string): Promise<Group | null> {

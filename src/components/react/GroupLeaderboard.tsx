@@ -1,10 +1,12 @@
-import { useEffect, useState, useMemo } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { batchGetUsers, getCurrentUser } from '../../lib/auth';
 import { calculateUserTotalPoints, calculatePredictionPoints } from '../../lib/points';
+import PointsHistoryModal from './PointsHistoryModal';
 import type { Group, Match, Prediction } from '../../lib/types';
 import type { GroupLeaderboardEntry } from '../../lib/points';
+import type { BonusPrediction } from '../../lib/types';
 
 interface GroupLeaderboardProps {
   groupId: string;
@@ -25,6 +27,9 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     map: new Map()
   });
   const [usersMap, setUsersMap] = useState<Map<string, { displayName?: string }>>(new Map());
+  const [selectedEntry, setSelectedEntry] = useState<GroupLeaderboardEntry | null>(null);
+  const predictionsByUserRef = useRef<Map<string, Prediction[]>>(new Map());
+  const bonusByUserRef = useRef<Map<string, BonusPrediction>>(new Map());
 
   const allUserIds = useMemo(
     () => [...new Set([...group.participants, group.adminUid])],
@@ -87,8 +92,38 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
       return;
     }
 
+    function buildEntries() {
+      const predictionsByUser = predictionsByUserRef.current;
+      const bonusByUser = bonusByUserRef.current;
+      const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
+        const user = usersMap.get(userId);
+        const userPredictions = predictionsByUser.get(userId) ?? [];
+        const matchPoints = calculateUserTotalPoints(userPredictions);
+        const bonusPoints = bonusByUser.get(userId)?.points ?? 0;
+        return {
+          userId,
+          userName: user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`,
+          totalPoints: matchPoints + bonusPoints,
+          predictionsCount: 0,
+          rank: 0
+        };
+      });
+      entries.sort((a, b) =>
+        b.totalPoints !== a.totalPoints
+          ? b.totalPoints - a.totalPoints
+          : a.userName.localeCompare(b.userName)
+      );
+      entries.forEach((e, i) => {
+        e.rank = i > 0 && e.totalPoints === entries[i - 1].totalPoints
+          ? entries[i - 1].rank
+          : i + 1;
+      });
+      setLeaderboard(entries);
+      setLoading(false);
+    }
+
     const predictionsRef = collection(db, 'groups', groupId, 'predictions');
-    const unsubscribe = onSnapshot(
+    const unsubPredictions = onSnapshot(
       predictionsRef,
       (snapshot) => {
         const predictionsByUser = new Map<string, Prediction[]>();
@@ -109,32 +144,8 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
           if (!predictionsByUser.has(userId)) predictionsByUser.set(userId, []);
           predictionsByUser.get(userId)!.push(prediction);
         });
-
-        const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
-          const user = usersMap.get(userId);
-          const userPredictions = predictionsByUser.get(userId) ?? [];
-          return {
-            userId,
-            userName: user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`,
-            totalPoints: calculateUserTotalPoints(userPredictions),
-            predictionsCount: 0,
-            rank: 0
-          };
-        });
-
-        entries.sort((a, b) =>
-          b.totalPoints !== a.totalPoints
-            ? b.totalPoints - a.totalPoints
-            : a.userName.localeCompare(b.userName)
-        );
-        entries.forEach((e, i) => {
-          e.rank = i > 0 && e.totalPoints === entries[i - 1].totalPoints
-            ? entries[i - 1].rank
-            : i + 1;
-        });
-
-        setLeaderboard(entries);
-        setLoading(false);
+        predictionsByUserRef.current = predictionsByUser;
+        buildEntries();
       },
       (err) => {
         setError(err.message);
@@ -142,7 +153,26 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
       }
     );
 
-    return () => unsubscribe();
+    const bonusRef = collection(db, 'groups', groupId, 'bonusPredictions');
+    const unsubBonus = onSnapshot(
+      bonusRef,
+      (snapshot) => {
+        const bonusByUser = new Map<string, BonusPrediction>();
+        snapshot.forEach((doc) => {
+          const bonus = { id: doc.id, ...doc.data() } as BonusPrediction;
+          if (bonus.userId != null) {
+            bonusByUser.set(bonus.userId, bonus);
+          }
+        });
+        bonusByUserRef.current = bonusByUser;
+        buildEntries();
+      }
+    );
+
+    return () => {
+      unsubPredictions();
+      unsubBonus();
+    };
   }, [groupId, allUserIds, group.settings, finishedMatches, usersMap]);
 
   if (loading) {
@@ -217,15 +247,34 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
                   {entry.userName}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
-                  <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-green-600' : 'text-gray-500'}`}>
-                    {entry.totalPoints}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEntry(entry)}
+                    className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1 rounded"
+                    title="Ver historial de puntos"
+                  >
+                    <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-blue-700' : 'text-gray-500'}`}>
+                      {entry.totalPoints}
+                    </span>
+                  </button>
                 </td>
               </tr>
             );
           })}
         </tbody>
       </table>
+
+      {selectedEntry && (
+        <PointsHistoryModal
+          isOpen={!!selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          userName={selectedEntry.userName}
+          predictions={predictionsByUserRef.current.get(selectedEntry.userId) ?? []}
+          bonus={bonusByUserRef.current.get(selectedEntry.userId)}
+          matchesMap={finishedMatches.map}
+          competitionId={group.competitionId}
+        />
+      )}
     </div>
   );
 }

@@ -1,20 +1,32 @@
 const FIFA_FLAGS_BASE = 'https://api.fifa.com/api/v3/picture/flags-sq-2';
-const BETPLAY_FLAGS_BASE = 'https://static.prisa.com/aside/resizer/resize/img/sports/football/teams/XXXX.png?width=44&height=44';
+const BETPLAY_FLAGS_BASE =
+  'https://static.prisa.com/aside/resizer/resize/img/sports/football/teams/XXXX.png?width=44&height=44';
+const UEFA_LOGOS_BASE = 'https://img.uefa.com/imgml/TP/teams/logos/70x70';
 
 /**
  * Retorna todas las URLs disponibles para un escudo de equipo (útil para <picture> tags)
+ * Acepta códigos de:
+ * - Selecciones (ISO/FIFA, ej: "GER")
+ * - Clubes DIMAYOR (código numérico BetPlay)
+ * - Clubes UEFA (código numérico UEFA, ej: "7889")
  */
-export function getTeamImageUrls(shortCode: string | undefined): string[] {
-  if (!shortCode || !shortCode.trim()) {
+export function getTeamImageUrls(code: string | undefined): string[] {
+  if (!code || !code.trim()) {
     return [];
   }
 
-  const cleanCode = shortCode.trim().toUpperCase();
+  const cleanCode = code.trim();
+  const upperCode = cleanCode.toUpperCase();
   const baseUrl = getBasePath() || '/';
-  
+
   return [
-    `${FIFA_FLAGS_BASE}/${encodeURIComponent(cleanCode)}`,
-    BETPLAY_FLAGS_BASE.replace('XXXX', cleanCode),
+    // 1) Escudo UEFA (Champions / clubes europeos)
+    `${UEFA_LOGOS_BASE}/${encodeURIComponent(cleanCode)}.png`,
+    // 2) Bandera FIFA (selecciones)
+    `${FIFA_FLAGS_BASE}/${encodeURIComponent(upperCode)}`,
+    // 3) Escudo BetPlay (DIMAYOR)
+    BETPLAY_FLAGS_BASE.replace('XXXX', upperCode),
+    // 4) Fallback local
     `${baseUrl}team-font.jpg`.replace(/\/+/g, '/')
   ];
 }
