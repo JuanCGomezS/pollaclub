@@ -1,5 +1,4 @@
 import { getCurrentUser } from '../../lib/auth';
-import { isGroupAdmin } from '../../lib/groups';
 import { getRoute } from '../../lib/utils';
 import type { Group } from '../../lib/types';
 
@@ -10,23 +9,11 @@ interface GroupSettingsProps {
 
 export default function GroupSettings({ groupId, group: groupProp }: GroupSettingsProps) {
   const user = getCurrentUser();
-  const isAdmin = user ? isGroupAdmin(groupProp, user.uid) : false;
 
   if (!user) {
     return (
       <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">
         <p>No hay usuario autenticado.</p>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">
-        <p>No tienes permiso para ver la configuración de este grupo.</p>
-        <a href={getRoute(`/groups/dashboard?groupId=${groupId}&tab=predictions`)} className="mt-4 inline-block text-blue-600 hover:text-blue-800">
-          Volver al dashboard
-        </a>
       </div>
     );
   }

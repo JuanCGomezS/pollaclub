@@ -3,6 +3,7 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { batchGetUsers, getCurrentUser } from '../../lib/auth';
 import { calculateUserTotalPoints, calculatePredictionPoints } from '../../lib/points';
+import PointsHistoryModal from './PointsHistoryModal';
 import type { Group, Match, Prediction } from '../../lib/types';
 import type { GroupLeaderboardEntry } from '../../lib/points';
 import type { BonusPrediction } from '../../lib/types';
@@ -26,8 +27,9 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     map: new Map()
   });
   const [usersMap, setUsersMap] = useState<Map<string, { displayName?: string }>>(new Map());
+  const [selectedEntry, setSelectedEntry] = useState<GroupLeaderboardEntry | null>(null);
   const predictionsByUserRef = useRef<Map<string, Prediction[]>>(new Map());
-  const bonusPointsByUserRef = useRef<Map<string, number>>(new Map());
+  const bonusByUserRef = useRef<Map<string, BonusPrediction>>(new Map());
 
   const allUserIds = useMemo(
     () => [...new Set([...group.participants, group.adminUid])],
@@ -92,12 +94,12 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
 
     function buildEntries() {
       const predictionsByUser = predictionsByUserRef.current;
-      const bonusPointsByUser = bonusPointsByUserRef.current;
+      const bonusByUser = bonusByUserRef.current;
       const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
         const user = usersMap.get(userId);
         const userPredictions = predictionsByUser.get(userId) ?? [];
         const matchPoints = calculateUserTotalPoints(userPredictions);
-        const bonusPoints = bonusPointsByUser.get(userId) ?? 0;
+        const bonusPoints = bonusByUser.get(userId)?.points ?? 0;
         return {
           userId,
           userName: user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`,
@@ -155,14 +157,14 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     const unsubBonus = onSnapshot(
       bonusRef,
       (snapshot) => {
-        const bonusPointsByUser = new Map<string, number>();
+        const bonusByUser = new Map<string, BonusPrediction>();
         snapshot.forEach((doc) => {
           const bonus = { id: doc.id, ...doc.data() } as BonusPrediction;
           if (bonus.userId != null) {
-            bonusPointsByUser.set(bonus.userId, bonus.points ?? 0);
+            bonusByUser.set(bonus.userId, bonus);
           }
         });
-        bonusPointsByUserRef.current = bonusPointsByUser;
+        bonusByUserRef.current = bonusByUser;
         buildEntries();
       }
     );
@@ -245,15 +247,34 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
                   {entry.userName}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
-                  <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-green-600' : 'text-gray-500'}`}>
-                    {entry.totalPoints}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEntry(entry)}
+                    className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1 rounded"
+                    title="Ver historial de puntos"
+                  >
+                    <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-blue-700' : 'text-gray-500'}`}>
+                      {entry.totalPoints}
+                    </span>
+                  </button>
                 </td>
               </tr>
             );
           })}
         </tbody>
       </table>
+
+      {selectedEntry && (
+        <PointsHistoryModal
+          isOpen={!!selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          userName={selectedEntry.userName}
+          predictions={predictionsByUserRef.current.get(selectedEntry.userId) ?? []}
+          bonus={bonusByUserRef.current.get(selectedEntry.userId)}
+          matchesMap={finishedMatches.map}
+          competitionId={group.competitionId}
+        />
+      )}
     </div>
   );
 }
