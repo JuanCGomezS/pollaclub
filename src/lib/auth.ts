@@ -6,8 +6,9 @@ import {
   updateProfile
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { doc, setDoc, getDoc, getDocs, serverTimestamp, query, where, collection } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { doc, setDoc, updateDoc, getDoc, getDocs, serverTimestamp, query, where, collection, deleteField } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { auth, db, storage } from './firebase';
 import type { User as UserType } from './types';
 
 /**
@@ -145,4 +146,55 @@ export async function updateUserProfile(uid: string, data: Partial<UserType>): P
   } catch (error: any) {
     throw new Error(error.message || 'Error al actualizar perfil');
   }
+}
+
+const AVATAR_PATH = 'users';
+const AVATAR_FILE = 'avatar';
+
+/**
+ * Sube o reemplaza el avatar del usuario en Storage y actualiza la URL en Firestore.
+ * Ruta en Storage: users/{uid}/avatar (extensión según el archivo).
+ * Solo el usuario autenticado puede subir su propio avatar.
+ */
+export async function uploadUserAvatar(uid: string, file: File): Promise<string> {
+  if (auth.currentUser?.uid !== uid) {
+    throw new Error('Solo puedes subir tu propio avatar');
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  if (!allowed.includes(ext)) {
+    throw new Error('Formato no permitido. Usa: ' + allowed.join(', '));
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    throw new Error('La imagen no puede superar 2 MB');
+  }
+
+  const path = `${AVATAR_PATH}/${uid}/${AVATAR_FILE}.${ext}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, { contentType: file.type });
+  const downloadUrl = await getDownloadURL(storageRef);
+  await updateUserProfile(uid, { avatarUrl: downloadUrl });
+  return downloadUrl;
+}
+
+/**
+ * Elimina el avatar del usuario en Storage y quita avatarUrl del documento en Firestore.
+ * No falla si no había avatar.
+ */
+export async function deleteUserAvatar(uid: string): Promise<void> {
+  if (auth.currentUser?.uid !== uid) {
+    throw new Error('Solo puedes eliminar tu propio avatar');
+  }
+  const ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  for (const e of ext) {
+    const path = `${AVATAR_PATH}/${uid}/${AVATAR_FILE}.${e}`;
+    try {
+      const storageRef = ref(storage, path);
+      await deleteObject(storageRef);
+    } catch (_) {
+      // Ignorar si no existe
+    }
+  }
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { avatarUrl: deleteField() });
 }

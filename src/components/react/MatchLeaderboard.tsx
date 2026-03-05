@@ -4,7 +4,12 @@ import { batchGetUsers, getCurrentUser } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import type { MatchLeaderboardEntry } from '../../lib/points';
 import { calculatePredictionPoints } from '../../lib/points';
-import type { Group, Match, Prediction } from '../../lib/types';
+import type { Group, Match, Prediction, User as UserType } from '../../lib/types';
+
+function getInitial(nameOrEmail: string): string {
+  const s = (nameOrEmail || 'U').trim();
+  return s[0].toUpperCase();
+}
 
 interface MatchLeaderboardProps {
   groupId: string;
@@ -14,6 +19,7 @@ interface MatchLeaderboardProps {
 
 export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<MatchLeaderboardEntry[]>([]);
+  const [usersMap, setUsersMap] = useState<Map<string, UserType>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -45,7 +51,8 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
           }
 
           const userIds = [...new Set(predictions.map(p => p.userId))];
-          const usersMap = await batchGetUsers(userIds);
+          const map = await batchGetUsers(userIds);
+          setUsersMap(map);
 
           const entries: MatchLeaderboardEntry[] = predictions.map((prediction) => {
             let points = prediction.points || 0;
@@ -59,7 +66,7 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
               points = calculated.points;
             }
 
-            const user = usersMap.get(prediction.userId);
+            const user = map.get(prediction.userId);
             return {
               userId: prediction.userId,
               userName: user?.displayName || `Usuario ${prediction.userId.substring(0, 8)}...`,
@@ -168,7 +175,24 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
                   {entry.rank}
                 </td>
                 <td className={`px-3 py-2 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-gray-900' : 'text-gray-900'}`}>
-                  {entry.userName}
+                  <div className="flex items-center gap-3">
+                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+                      {(() => {
+                        const user = usersMap.get(entry.userId);
+                        if (user?.avatarUrl) {
+                          return (
+                            <img
+                              src={user.avatarUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          );
+                        }
+                        return getInitial(entry.userName);
+                      })()}
+                    </span>
+                    <span>{entry.userName}</span>
+                  </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
                   <span className={isExact ? 'font-bold text-green-600' : ''}>

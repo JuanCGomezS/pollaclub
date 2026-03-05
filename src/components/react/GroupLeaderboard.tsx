@@ -4,9 +4,14 @@ import { db } from '../../lib/firebase';
 import { batchGetUsers, getCurrentUser } from '../../lib/auth';
 import { calculateUserTotalPoints, calculatePredictionPoints } from '../../lib/points';
 import PointsHistoryModal from './PointsHistoryModal';
-import type { Group, Match, Prediction } from '../../lib/types';
+import type { Group, Match, Prediction, User as UserType } from '../../lib/types';
 import type { GroupLeaderboardEntry } from '../../lib/points';
 import type { BonusPrediction } from '../../lib/types';
+
+function getInitial(nameOrEmail: string): string {
+  const s = (nameOrEmail || 'U').trim();
+  return s[0].toUpperCase();
+}
 
 interface GroupLeaderboardProps {
   groupId: string;
@@ -26,7 +31,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     ids: new Set(),
     map: new Map()
   });
-  const [usersMap, setUsersMap] = useState<Map<string, { displayName?: string }>>(new Map());
+  const [usersMap, setUsersMap] = useState<Map<string, UserType>>(new Map());
   const [selectedEntry, setSelectedEntry] = useState<GroupLeaderboardEntry | null>(null);
   const predictionsByUserRef = useRef<Map<string, Prediction[]>>(new Map());
   const bonusByUserRef = useRef<Map<string, BonusPrediction>>(new Map());
@@ -77,9 +82,10 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     if (finishedMatches.ids.size === 0) {
       const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
         const user = usersMap.get(userId);
+        const userName = user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`;
         return {
           userId,
-          userName: user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`,
+          userName,
           totalPoints: 0,
           predictionsCount: 0,
           rank: 0
@@ -97,12 +103,13 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
       const bonusByUser = bonusByUserRef.current;
       const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
         const user = usersMap.get(userId);
+        const userName = user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`;
         const userPredictions = predictionsByUser.get(userId) ?? [];
         const matchPoints = calculateUserTotalPoints(userPredictions);
         const bonusPoints = bonusByUser.get(userId)?.points ?? 0;
         return {
           userId,
-          userName: user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`,
+          userName,
           totalPoints: matchPoints + bonusPoints,
           predictionsCount: 0,
           rank: 0
@@ -244,7 +251,24 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
                   {entry.rank > 3 && entry.rank}
                 </td>
                 <td className={`px-4 py-3 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-gray-900' : 'text-gray-900'}`}>
-                  {entry.userName}
+                  <div className="flex items-center gap-3">
+                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+                      {(() => {
+                        const user = usersMap.get(entry.userId);
+                        if (user?.avatarUrl) {
+                          return (
+                            <img
+                              src={user.avatarUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          );
+                        }
+                        return getInitial(entry.userName);
+                      })()}
+                    </span>
+                    <span>{entry.userName}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
                   <button
@@ -269,6 +293,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
           isOpen={!!selectedEntry}
           onClose={() => setSelectedEntry(null)}
           userName={selectedEntry.userName}
+          avatarUrl={usersMap.get(selectedEntry.userId)?.avatarUrl}
           predictions={predictionsByUserRef.current.get(selectedEntry.userId) ?? []}
           bonus={bonusByUserRef.current.get(selectedEntry.userId)}
           matchesMap={finishedMatches.map}
