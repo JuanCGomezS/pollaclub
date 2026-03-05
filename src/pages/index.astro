@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HomeGroupsLink from '../components/react/HomeGroupsLink';
+import HowItWorks from '../components/react/HowItWorks';
 ---
 
 <Layout title="PollaClub - Sistema de Pronósticos Deportivos" showHeader={true}>
@@ -12,7 +13,10 @@ import HomeGroupsLink from '../components/react/HomeGroupsLink';
       <p class="text-xl text-gray-600 mb-4">
         Sistema de pronósticos deportivos entre amigos
       </p>
-      <HomeGroupsLink client:load />
+      <div class="flex justify-center">
+        <HomeGroupsLink client:load />
+      </div>
+      <HowItWorks client:load />
     </div>
   </main>
 </Layout>
