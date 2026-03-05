@@ -7,10 +7,16 @@ interface PointsHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   userName: string;
+  avatarUrl?: string;
   predictions: Prediction[];
   bonus: BonusPrediction | undefined;
   matchesMap: Map<string, Match>;
   competitionId: string;
+}
+
+function getInitial(nameOrEmail: string): string {
+  const s = (nameOrEmail || 'U').trim();
+  return s[0].toUpperCase();
 }
 
 const BONUS_LABELS: Record<string, string> = {
@@ -25,6 +31,7 @@ export default function PointsHistoryModal({
   isOpen,
   onClose,
   userName,
+  avatarUrl,
   predictions,
   bonus,
   matchesMap,
@@ -82,8 +89,21 @@ export default function PointsHistoryModal({
     bonus?.pointsBreakdown &&
     Object.values(bonus.pointsBreakdown).some((v) => v > 0);
 
+  const modalTitle = (
+    <div className="flex items-center gap-3">
+      <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          getInitial(userName)
+        )}
+      </span>
+      <span>Historial de puntos - {userName}</span>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Historial de puntos - ${userName}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
       <div className="space-y-4">
         {rows.length === 0 && totalBonus === 0 ? (
           <p className="text-gray-500 text-center py-4">

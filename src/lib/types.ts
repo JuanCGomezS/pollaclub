@@ -108,6 +108,7 @@ export interface User {
   uid: string;
   displayName: string;
   email: string;
+  avatarUrl?: string;
   groups: string[];
   canCreateGroups: boolean; // Permiso para crear grupos (habilitado manualmente por admin)
   createdAt: Timestamp;
