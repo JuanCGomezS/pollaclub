@@ -121,9 +121,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
           : a.userName.localeCompare(b.userName)
       );
       entries.forEach((e, i) => {
-        e.rank = i > 0 && e.totalPoints === entries[i - 1].totalPoints
-          ? entries[i - 1].rank
-          : i + 1;
+        e.rank = i + 1;
       });
       setLeaderboard(entries);
       setLoading(false);

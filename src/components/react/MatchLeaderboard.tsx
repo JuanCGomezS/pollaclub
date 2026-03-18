@@ -56,7 +56,7 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
 
           const entries: MatchLeaderboardEntry[] = predictions.map((prediction) => {
             let points = prediction.points || 0;
-            
+
             if (!prediction.points && match.result) {
               const calculated = calculatePredictionPoints(
                 prediction,
@@ -80,14 +80,26 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
             if (b.points !== a.points) {
               return b.points - a.points;
             }
+
+            const actualTeam1 = match.result!.team1Score;
+            const actualTeam2 = match.result!.team2Score;
+
+            const distanceA =
+              Math.abs(a.prediction.team1Score - actualTeam1) +
+              Math.abs(a.prediction.team2Score - actualTeam2);
+            const distanceB =
+              Math.abs(b.prediction.team1Score - actualTeam1) +
+              Math.abs(b.prediction.team2Score - actualTeam2);
+
+            if (distanceA !== distanceB) {
+              return distanceA - distanceB;
+            }
+
             return a.userName.localeCompare(b.userName);
           });
 
           entries.forEach((entry, index) => {
             entry.rank = index + 1;
-            if (index > 0 && entry.points === entries[index - 1].points) {
-              entry.rank = entries[index - 1].rank;
-            }
           });
 
           setLeaderboard(entries);
