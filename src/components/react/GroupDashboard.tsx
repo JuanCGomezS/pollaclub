@@ -132,6 +132,12 @@ export default function GroupDashboard() {
     <div className="max-w-7xl mx-auto mt-8 p-6 bg-[color:var(--pc-surface)]/40">
       <div className="mb-6">
         <div className="flex justify-between items-start">
+          {group.logoUrl && (
+            <div
+              className="absolute inset-0 opacity-10 bg-center bg-cover bg-no-repeat pointer-events-none"
+              style={{ backgroundImage: `url(${group.logoUrl})` }}
+            />
+          )}
           <div>
             <h1 className="text-3xl font-bold text-[color:var(--pc-text-on-dark)]">{group.name}</h1>
             <p className="text-[color:var(--pc-muted)] mt-1">
@@ -164,10 +170,9 @@ export default function GroupDashboard() {
               window.history.pushState({}, '', url.toString());
               setActiveTab('predictions');
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-              activeTab === 'predictions'
-                ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
-                : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'predictions'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Pronósticos
@@ -179,10 +184,9 @@ export default function GroupDashboard() {
               window.history.pushState({}, '', url.toString());
               setActiveTab('participants');
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-              activeTab === 'participants'
-                ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
-                : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'participants'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Participantes
@@ -195,10 +199,9 @@ export default function GroupDashboard() {
               window.history.pushState({}, '', url.toString());
               setActiveTab('settings');
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
-              activeTab === 'settings'
-                ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
-                : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'settings'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Configuración

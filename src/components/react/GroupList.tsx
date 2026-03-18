@@ -116,31 +116,39 @@ export default function GroupList() {
           <a
             key={group.id}
             href={getRoute(`/groups/dashboard?groupId=${group.id}&tab=predictions`)}
-            className="block p-6 bg-[color:var(--pc-surface)]/80 border border-[color:var(--pc-main-dark)]/60 rounded-lg hover:shadow-lg hover:border-[color:var(--pc-accent)] transition cursor-pointer"
+            className="relative block p-6 bg-[color:var(--pc-surface)]/80 border border-[color:var(--pc-main-dark)]/60 rounded-lg hover:shadow-[0_2px_12px_0_var(--pc-main-dark)] hover:border-[color:var(--pc-accent)] transition cursor-pointer overflow-hidden"
           >
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-xl font-semibold text-[color:var(--pc-text-on-dark)]">
-                {group.name}
-              </h3>
-              {group.isActive ? (
-                <span className="px-2 py-1 text-xs bg-[color:var(--pc-main)]/20 text-[color:var(--pc-accent)] rounded">
-                  Activo
+            {group.logoUrl && (
+              <div
+                className="absolute inset-0 opacity-10 bg-center bg-cover bg-no-repeat pointer-events-none"
+                style={{ backgroundImage: `url(${group.logoUrl})` }}
+              />
+            )}
+            <div className="relative">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl font-semibold text-[color:var(--pc-text-on-dark)]">
+                  {group.name}
+                </h3>
+                {group.isActive ? (
+                  <span className="px-2 py-1 text-xs bg-[color:var(--pc-main)]/20 text-[color:var(--pc-accent)] rounded">
+                    Activo
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 text-xs bg-gray-700/40 text-gray-200 rounded">
+                    Inactivo
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-[color:var(--pc-muted)] mb-2">
+                Código:{' '}
+                <span className="font-mono font-semibold text-[color:var(--pc-text-on-dark)]">
+                  {group.code}
                 </span>
-              ) : (
-                <span className="px-2 py-1 text-xs bg-gray-700/40 text-gray-200 rounded">
-                  Inactivo
-                </span>
-              )}
+              </p>
+              <p className="text-sm text-[color:var(--pc-muted)]">
+                {group.participants.length} participante{group.participants.length !== 1 ? 's' : ''}
+              </p>
             </div>
-            <p className="text-sm text-[color:var(--pc-muted)] mb-2">
-              Código:{' '}
-              <span className="font-mono font-semibold text-[color:var(--pc-text-on-dark)]">
-                {group.code}
-              </span>
-            </p>
-            <p className="text-sm text-[color:var(--pc-muted)]">
-              {group.participants.length} participante{group.participants.length !== 1 ? 's' : ''}
-            </p>
           </a>
         ))}
       </div>
