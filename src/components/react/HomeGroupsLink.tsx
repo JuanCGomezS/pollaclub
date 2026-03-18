@@ -30,7 +30,7 @@ export default function HomeGroupsLink() {
     <div className="flex justify-center">
       <a
         href={getRoute('/groups')}
-        className="inline-flex items-center px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
+        className="inline-block bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] px-6 py-3 rounded-lg hover:bg-[color:var(--pc-accent-dark)] transition"
       >
         Ir a grupos
       </a>

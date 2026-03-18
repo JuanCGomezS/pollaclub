@@ -1,0 +1,23 @@
+:root {
+  --pc-main: #1f7a3e;
+  --pc-accent: #f4c542;
+
+  --pc-surface: #0b1f3a;
+  --pc-main-dark: #14532d;
+  --pc-accent-dark: #c89b2b;
+
+  --pc-text-on-dark: #ffffff;
+  --pc-muted: #d1d5db;
+  --pc-text-strong: #111827;
+}
+
+html,
+body {
+  background-color: var(--pc-surface);
+  color: var(--pc-text-on-dark);
+}
+
+body {
+  color-scheme: dark;
+}
+

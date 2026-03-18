@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 overflow-y-auto"
       aria-labelledby="modal-title"
@@ -36,22 +37,22 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       aria-modal="true"
     >
       <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        className="fixed inset-0 bg-black/70 transition-opacity"
         onClick={onClose}
       />
 
       <div className="flex min-h-full items-center justify-center p-4 text-center">
         <div
-          className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-4xl my-8"
+          className="relative transform overflow-hidden rounded-lg bg-[color:var(--pc-surface)] text-left shadow-2xl transition-all w-full max-w-4xl my-8 border border-[color:var(--pc-main-dark)]/70"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-            <h3 className="text-lg font-semibold text-gray-900" id="modal-title">
+          <div className="flex items-center justify-between border-b border-[color:var(--pc-main-dark)]/70 px-6 py-4">
+            <h3 className="text-lg font-semibold text-[color:var(--pc-text-on-dark)]" id="modal-title">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-md text-[color:var(--pc-muted)] hover:text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
             >
               <span className="sr-only">Cerrar</span>
               <svg
@@ -70,11 +71,12 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             </button>
           </div>
 
-          <div className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="px-6 py-4 max-h-[calc(100vh-160px)] overflow-y-auto bg-[color:var(--pc-surface)]">
             {children}
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

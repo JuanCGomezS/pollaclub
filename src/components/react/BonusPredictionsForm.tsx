@@ -52,23 +52,23 @@ function FilterableSelect({
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1">{label}</label>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white text-left text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-lg bg-[color:var(--pc-surface)] text-left text-[color:var(--pc-text-on-dark)] focus:ring-2 focus:ring-[color:var(--pc-accent)] focus:border-[color:var(--pc-accent)]"
       >
-        <span className={value ? '' : 'text-gray-500'}>{value || placeholder}</span>
-        <span className="text-gray-400">{open ? '▲' : '▼'}</span>
+        <span className={value ? '' : 'text-[color:var(--pc-muted)]'}>{value || placeholder}</span>
+        <span className="text-[color:var(--pc-muted)]">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
-        <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg max-h-56 flex flex-col">
+        <div className="absolute z-10 mt-1 w-full rounded-lg border border-[color:var(--pc-main-dark)]/70 bg-[color:var(--pc-surface)] shadow-lg max-h-56 flex flex-col">
           <input
             type="text"
             placeholder="Filtrar..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="mx-2 mt-2 py-1.5 px-2 border border-gray-200 rounded text-sm"
+            className="mx-2 mt-2 py-1.5 px-2 border border-[color:var(--pc-main-dark)]/60 rounded text-sm bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)]"
             autoFocus
           />
           <ul className="overflow-auto py-1 max-h-44">
@@ -80,7 +80,7 @@ function FilterableSelect({
                   setOpen(false);
                   setFilter('');
                 }}
-                className="w-full text-left px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
+                className="w-full text-left px-3 py-1.5 text-sm text-[color:var(--pc-muted)] hover:bg-[color:var(--pc-main-dark)]/40"
               >
                 — Ninguno —
               </button>
@@ -94,14 +94,16 @@ function FilterableSelect({
                     setOpen(false);
                     setFilter('');
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 ${value === opt ? 'bg-blue-50 font-medium' : ''}`}
+                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[color:var(--pc-main-dark)]/40 ${
+                    value === opt ? 'bg-[color:var(--pc-main)]/40 font-medium' : ''
+                  }`}
                 >
                   {opt}
                 </button>
               </li>
             ))}
             {filtered.length === 0 && (
-              <li className="px-3 py-2 text-sm text-gray-500">Sin resultados</li>
+              <li className="px-3 py-2 text-sm text-[color:var(--pc-muted)]">Sin resultados</li>
             )}
           </ul>
         </div>
@@ -182,16 +184,16 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
   if (!user) return null;
   if (loadError) {
     return (
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+      <div className="p-4 bg-yellow-900/30 border border-yellow-500/60 rounded-lg text-yellow-100 text-sm">
         {loadError}
       </div>
     );
   }
   if (competition === null || locked === null || optionsLoading) {
     return (
-      <div className="p-4 bg-gray-50 rounded-lg flex items-center gap-2">
-        <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent" />
-        <span className="text-gray-600">Cargando pronósticos bonus...</span>
+      <div className="p-4 bg-[color:var(--pc-surface)]/80 rounded-lg flex items-center gap-2 border border-[color:var(--pc-main-dark)]/60">
+        <div className="animate-spin rounded-full h-5 w-5 border-2 border-[color:var(--pc-accent)] border-t-transparent" />
+        <span className="text-[color:var(--pc-muted)]">Cargando pronósticos bonus...</span>
       </div>
     );
   }
@@ -201,18 +203,38 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
 
   if (locked) {
     return (
-      <section className="bg-white p-5 rounded-lg shadow border border-gray-200">
-        <h2 className="text-lg font-bold text-gray-900 mb-2">Pronósticos bonus</h2>
-        <p className="text-gray-600 text-sm">
+      <section className="bg-[color:var(--pc-surface)]/80 p-5 rounded-lg shadow border border-[color:var(--pc-main-dark)]/60">
+        <h2 className="text-lg font-bold text-[color:var(--pc-text-on-dark)] mb-2">Pronósticos bonus</h2>
+        <p className="text-[color:var(--pc-muted)] text-sm">
           Los pronósticos bonus están cerrados. No se pueden enviar ni modificar.
         </p>
         {existing && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm space-y-1">
-            {existing.winner && <p><span className="text-gray-500">Ganador:</span> {existing.winner}</p>}
-            {existing.runnerUp && <p><span className="text-gray-500">Subcampeón:</span> {existing.runnerUp}</p>}
-            {existing.thirdPlace && <p><span className="text-gray-500">Tercero:</span> {existing.thirdPlace}</p>}
-            {existing.topScorer && <p><span className="text-gray-500">Goleador:</span> {existing.topScorer}</p>}
-            {existing.topAssister && <p><span className="text-gray-500">Máximo asistidor:</span> {existing.topAssister}</p>}
+          <div className="mt-4 p-3 bg-[color:var(--pc-main-dark)]/40 rounded-lg text-sm space-y-1">
+            {existing.winner && (
+              <p>
+                <span className="text-[color:var(--pc-muted)]">Ganador:</span> {existing.winner}
+              </p>
+            )}
+            {existing.runnerUp && (
+              <p>
+                <span className="text-[color:var(--pc-muted)]">Subcampeón:</span> {existing.runnerUp}
+              </p>
+            )}
+            {existing.thirdPlace && (
+              <p>
+                <span className="text-[color:var(--pc-muted)]">Tercero:</span> {existing.thirdPlace}
+              </p>
+            )}
+            {existing.topScorer && (
+              <p>
+                <span className="text-[color:var(--pc-muted)]">Goleador:</span> {existing.topScorer}
+              </p>
+            )}
+            {existing.topAssister && (
+              <p>
+                <span className="text-[color:var(--pc-muted)]">Máximo asistidor:</span> {existing.topAssister}
+              </p>
+            )}
           </div>
         )}
       </section>
@@ -220,13 +242,13 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
   }
 
   return (
-    <section className="bg-white p-5 rounded-lg shadow border border-gray-200">
-      <h2 className="text-lg font-bold text-gray-900 mb-1">Pronósticos bonus</h2>
-      <p className="text-gray-600 text-sm mb-4">
+    <section className="bg-[color:var(--pc-surface)]/80 p-5 rounded-lg shadow border border-[color:var(--pc-main-dark)]/60">
+      <h2 className="text-lg font-bold text-[color:var(--pc-text-on-dark)] mb-1">Pronósticos bonus</h2>
+      <p className="text-[color:var(--pc-muted)] text-sm mb-4">
         Pronósticos globales de la competición. Puedes filtrar cada lista escribiendo en el cuadro.
       </p>
       {lockedAt && (
-        <p className="text-gray-600 text-sm mb-4">
+        <p className="text-[color:var(--pc-muted)] text-sm mb-4">
           Los pronósticos se cerrarán el {lockedAt.toLocaleDateString()} a las {lockedAt.toLocaleTimeString()}.
         </p>
       )}
@@ -282,7 +304,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] font-semibold rounded-lg hover:bg-[color:var(--pc-accent-dark)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Guardando...' : existing ? 'Actualizar pronósticos bonus' : 'Guardar pronósticos bonus'}
           </button>
