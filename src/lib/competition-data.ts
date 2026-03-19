@@ -186,6 +186,21 @@ export async function getPlayerNames(competitionId: string): Promise<string[]> {
   return players.map((p) => p.name).sort();
 }
 
+export async function getPlayerOptionsWithTeam(
+  competitionId: string
+): Promise<Array<{ label: string; value: string }>> {
+  const [players, teams] = await Promise.all([getPlayersForCompetition(competitionId), getTeamsForCompetition(competitionId)]);
+  const teamById = new Map<string, string>(teams.map((t) => [t.id, t.name]));
+  const teamByName = new Map<string, string>(teams.map((t) => [t.name, t.name]));
+
+  return players
+    .map((p) => {
+      const teamName = teamById.get(p.teamId) ?? teamByName.get(p.teamId) ?? 'Sin equipo';
+      return { label: `${p.name} (${teamName})`, value: p.name };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
 export async function findTeamByName(competitionId: string, name: string): Promise<Team | null> {
   const teams = await getTeamsForCompetition(competitionId);
   return teams.find((t) => t.name === name) ?? null;
