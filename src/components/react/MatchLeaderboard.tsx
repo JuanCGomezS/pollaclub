@@ -56,7 +56,7 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
 
           const entries: MatchLeaderboardEntry[] = predictions.map((prediction) => {
             let points = prediction.points || 0;
-            
+
             if (!prediction.points && match.result) {
               const calculated = calculatePredictionPoints(
                 prediction,
@@ -80,14 +80,26 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
             if (b.points !== a.points) {
               return b.points - a.points;
             }
+
+            const actualTeam1 = match.result!.team1Score;
+            const actualTeam2 = match.result!.team2Score;
+
+            const distanceA =
+              Math.abs(a.prediction.team1Score - actualTeam1) +
+              Math.abs(a.prediction.team2Score - actualTeam2);
+            const distanceB =
+              Math.abs(b.prediction.team1Score - actualTeam1) +
+              Math.abs(b.prediction.team2Score - actualTeam2);
+
+            if (distanceA !== distanceB) {
+              return distanceA - distanceB;
+            }
+
             return a.userName.localeCompare(b.userName);
           });
 
           entries.forEach((entry, index) => {
             entry.rank = index + 1;
-            if (index > 0 && entry.points === entries[index - 1].points) {
-              entry.rank = entries[index - 1].rank;
-            }
           });
 
           setLeaderboard(entries);
@@ -108,7 +120,7 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
 
   if (!match.result) {
     return (
-      <div className="text-sm text-gray-500 text-center py-4">
+      <div className="text-sm text-[color:var(--pc-muted)] text-center py-4">
         Esperando resultado del partido...
       </div>
     );
@@ -117,15 +129,15 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
   if (loading) {
     return (
       <div className="text-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto" />
-        <p className="mt-2 text-sm text-gray-600">Cargando tabla...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[color:var(--pc-accent)] mx-auto" />
+        <p className="mt-2 text-sm text-[color:var(--pc-muted)]">Cargando tabla...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-sm text-red-600 text-center py-4">
+      <div className="text-sm text-red-200 text-center py-4">
         {error}
       </div>
     );
@@ -133,7 +145,7 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
 
   if (leaderboard.length === 0) {
     return (
-      <div className="text-sm text-gray-500 text-center py-4">
+      <div className="text-sm text-[color:var(--pc-muted)] text-center py-4">
         No hay pronósticos para este partido
       </div>
     );
@@ -142,25 +154,25 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
   const currentUserId = getCurrentUser()?.uid;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-xl border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/80 shadow-sm">
+      <table className="min-w-full divide-y divide-[color:var(--pc-main-dark)]/60">
+        <thead className="bg-[color:var(--pc-main-dark)]/60">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-3 py-2 text-left text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               #
             </th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-3 py-2 text-left text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               Participante
             </th>
-            <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-3 py-2 text-center text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               Pronóstico
             </th>
-            <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-3 py-2 text-center text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               Puntos
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-[color:var(--pc-surface)] divide-y divide-[color:var(--pc-main-dark)]/40">
           {leaderboard.map((entry) => {
             const isCurrentUser = currentUserId === entry.userId;
             const isExact = entry.prediction.team1Score === match.result!.team1Score &&
@@ -169,14 +181,14 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
             return (
               <tr
                 key={entry.userId}
-                className={entry.rank === 1 ? 'bg-yellow-50' : ''}
+                className={entry.rank === 1 ? 'bg-[color:var(--pc-accent)]/10' : ''}
               >
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-[color:var(--pc-text-on-dark)]">
                   {entry.rank}
                 </td>
-                <td className={`px-3 py-2 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-gray-900' : 'text-gray-900'}`}>
+                <td className={`px-3 py-2 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-[color:var(--pc-text-on-dark)]' : 'text-[color:var(--pc-text-on-dark)]'}`}>
                   <div className="flex items-center gap-3">
-                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[color:var(--pc-main-dark)]/60 text-[color:var(--pc-muted)] font-semibold text-sm">
                       {(() => {
                         const user = usersMap.get(entry.userId);
                         if (user?.avatarUrl) {
@@ -195,12 +207,12 @@ export default function MatchLeaderboard({ groupId, match, group }: MatchLeaderb
                   </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
-                  <span className={isExact ? 'font-bold text-green-600' : ''}>
+                  <span className={isExact ? 'font-bold text-[color:var(--pc-accent)]' : ''}>
                     {entry.prediction.team1Score} - {entry.prediction.team2Score}
                   </span>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
-                  <span className={`font-semibold ${entry.points > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span className={`font-semibold ${entry.points > 0 ? 'text-[color:var(--pc-accent)]' : 'text-[color:var(--pc-muted)]'}`}>
                     {entry.points}
                   </span>
                 </td>

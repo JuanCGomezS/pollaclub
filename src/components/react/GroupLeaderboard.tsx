@@ -121,9 +121,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
           : a.userName.localeCompare(b.userName)
       );
       entries.forEach((e, i) => {
-        e.rank = i > 0 && e.totalPoints === entries[i - 1].totalPoints
-          ? entries[i - 1].rank
-          : i + 1;
+        e.rank = i + 1;
       });
       setLeaderboard(entries);
       setLoading(false);
@@ -186,8 +184,8 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Cargando tabla de posiciones...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--pc-accent)] mx-auto" />
+          <p className="mt-4 text-[color:var(--pc-muted)]">Cargando tabla de posiciones...</p>
         </div>
       </div>
     );
@@ -195,7 +193,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
 
   if (error) {
     return (
-      <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div className="p-6 rounded-xl border border-red-500/60 bg-red-900/40 text-red-100">
         <p>{error}</p>
       </div>
     );
@@ -203,8 +201,8 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
 
   if (leaderboard.length === 0) {
     return (
-      <div className="text-center py-12 bg-gray-50 rounded-lg">
-        <p className="text-gray-600">No hay participantes en este grupo.</p>
+      <div className="text-center py-12 rounded-xl border border-dashed border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/60">
+        <p className="text-[color:var(--pc-muted)]">No hay participantes en este grupo.</p>
       </div>
     );
   }
@@ -212,47 +210,47 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
   const currentUserId = getCurrentUser()?.uid;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-xl border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/80 shadow-sm">
+      <table className="min-w-full divide-y divide-[color:var(--pc-main-dark)]/60">
+        <thead className="bg-[color:var(--pc-main-dark)]/60">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               #
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               Participante
             </th>
-            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-center text-xs font-semibold text-[color:var(--pc-muted)] uppercase tracking-wider">
               Puntos Totales
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-[color:var(--pc-surface)] divide-y divide-[color:var(--pc-main-dark)]/40">
           {leaderboard.map((entry) => {
             const isCurrentUser = currentUserId === entry.userId;
             
             return (
               <tr
                 key={entry.userId}
-                className={
-                  isCurrentUser 
-                    ? 'bg-blue-50 font-semibold' 
-                    : entry.rank === 1 
-                      ? 'bg-yellow-50' 
-                      : entry.rank <= 3 
-                        ? 'bg-gray-50' 
+                className={`${
+                  isCurrentUser
+                    ? 'bg-[color:var(--pc-main)]/20'
+                    : entry.rank === 1
+                      ? 'bg-[color:var(--pc-accent)]/10'
+                      : entry.rank <= 3
+                        ? 'bg-white/5'
                         : ''
-                }
+                }`}
               >
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-[color:var(--pc-text-on-dark)]">
                   {entry.rank === 1 && '🥇'}
                   {entry.rank === 2 && '🥈'}
                   {entry.rank === 3 && '🥉'}
                   {entry.rank > 3 && entry.rank}
                 </td>
-                <td className={`px-4 py-3 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-gray-900' : 'text-gray-900'}`}>
+                <td className={`px-4 py-3 whitespace-nowrap text-sm ${isCurrentUser ? 'font-bold text-[color:var(--pc-text-on-dark)]' : 'text-[color:var(--pc-text-on-dark)]'}`}>
                   <div className="flex items-center gap-3">
-                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+                    <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[color:var(--pc-main-dark)]/60 text-[color:var(--pc-muted)] font-semibold text-sm">
                       {(() => {
                         const user = usersMap.get(entry.userId);
                         if (user?.avatarUrl) {
@@ -274,10 +272,10 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
                   <button
                     type="button"
                     onClick={() => setSelectedEntry(entry)}
-                    className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1 rounded"
+                    className="inline-flex items-center gap-1.5 text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)] focus:ring-offset-1 rounded"
                     title="Ver historial de puntos"
                   >
-                    <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-blue-700' : 'text-gray-500'}`}>
+                    <span className={`font-bold text-lg ${entry.totalPoints > 0 ? 'text-[color:var(--pc-accent)]' : 'text-[color:var(--pc-muted)]'}`}>
                       {entry.totalPoints}
                     </span>
                   </button>

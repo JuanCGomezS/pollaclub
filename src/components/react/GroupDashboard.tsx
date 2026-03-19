@@ -96,8 +96,8 @@ export default function GroupDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Cargando grupo...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--pc-accent)] mx-auto" />
+          <p className="mt-4 text-[color:var(--pc-muted)]">Cargando grupo...</p>
         </div>
       </div>
     );
@@ -106,9 +106,9 @@ export default function GroupDashboard() {
   // Solo mostrar error si ya se verificaron los params y no hay groupId
   if (!groupId) {
     return (
-      <div className="max-w-4xl mx-auto mt-8 p-6 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+      <div className="max-w-4xl mx-auto mt-8 p-6 rounded-xl border border-[color:var(--pc-accent)]/60 bg-[color:var(--pc-surface)]/80 text-[color:var(--pc-muted)]">
         <p>No se especificó un grupo. Por favor, selecciona un grupo desde la lista.</p>
-        <a href={getRoute('/groups')} className="mt-4 inline-block text-blue-600 hover:text-blue-800">
+        <a href={getRoute('/groups')} className="mt-4 inline-block text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)]">
           Ir a mis grupos
         </a>
       </div>
@@ -117,9 +117,9 @@ export default function GroupDashboard() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto mt-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div className="max-w-4xl mx-auto mt-8 p-6 rounded-xl border border-red-500/60 bg-red-900/40 text-red-100">
         <p>{error}</p>
-        <a href={getRoute('/groups')} className="mt-4 inline-block text-blue-600 hover:text-blue-800">
+        <a href={getRoute('/groups')} className="mt-4 inline-block text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)]">
           Volver a mis grupos
         </a>
       </div>
@@ -129,26 +129,39 @@ export default function GroupDashboard() {
   if (!group) return null;
 
   return (
-    <div className="max-w-7xl mx-auto mt-8 p-6">
+    <div className="max-w-7xl mx-auto mt-8 p-6 bg-[color:var(--pc-surface)]/40">
       <div className="mb-6">
         <div className="flex justify-between items-start">
+          {group.logoUrl && (
+            <div
+              className="absolute inset-0 opacity-10 bg-center bg-cover bg-no-repeat pointer-events-none"
+              style={{ backgroundImage: `url(${group.logoUrl})` }}
+            />
+          )}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
-            <p className="text-gray-600 mt-1">
-              Código: <span className="font-mono font-semibold">{group.code}</span>
+            <h1 className="text-3xl font-bold text-[color:var(--pc-text-on-dark)]">{group.name}</h1>
+            <p className="text-[color:var(--pc-muted)] mt-1">
+              Código:{' '}
+              <span className="font-mono font-semibold text-[color:var(--pc-accent)]">
+                {group.code}
+              </span>
             </p>
           </div>
           <div className="text-right">
             {group.isActive ? (
-              <span className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Activo</span>
+              <span className="px-3 py-1 text-sm rounded-full bg-[color:var(--pc-main)]/20 text-[color:var(--pc-accent)] border border-[color:var(--pc-main)]/60">
+                Activo
+              </span>
             ) : (
-              <span className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-full">Inactivo</span>
+              <span className="px-3 py-1 text-sm rounded-full bg-gray-700/40 text-gray-200 border border-gray-500/60">
+                Inactivo
+              </span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-[color:var(--pc-main-dark)]/60 mb-6">
         <nav className="flex space-x-1">
           <button
             onClick={() => {
@@ -158,8 +171,8 @@ export default function GroupDashboard() {
               setActiveTab('predictions');
             }}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'predictions'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Pronósticos
@@ -172,8 +185,8 @@ export default function GroupDashboard() {
               setActiveTab('participants');
             }}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'participants'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Participantes
@@ -187,8 +200,8 @@ export default function GroupDashboard() {
               setActiveTab('settings');
             }}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${activeTab === 'settings'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+              : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
               }`}
           >
             Configuración

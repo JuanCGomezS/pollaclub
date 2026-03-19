@@ -55,14 +55,17 @@ export default function LoginForm() {
 
   if (forgotPassword && resetSent) {
     return (
-      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+      <div className="max-w-md mx-auto mt-8 p-6 bg-[color:var(--pc-surface)]/90 rounded-lg shadow-md border border-[color:var(--pc-main-dark)]/60">
         <div className="text-center mb-2 text-4xl" aria-hidden>⚽</div>
-        <h2 className="text-2xl font-bold text-center mb-3">¡Mensaje enviado!</h2>
-        <p className="text-gray-600 text-center mb-1">
-          Si hay una cuenta con <strong className="text-gray-800">{email}</strong>, te llegará un correo con el enlace
+        <h2 className="text-2xl font-bold text-center mb-3 text-[color:var(--pc-text-on-dark)]">
+          ¡Mensaje enviado!
+        </h2>
+        <p className="text-[color:var(--pc-muted)] text-center mb-1">
+          Si hay una cuenta con{' '}
+          <strong className="text-[color:var(--pc-text-on-dark)]">{email}</strong>, te llegará un correo con el enlace
           para restablecer tu contraseña.
         </p>
-        <p className="text-gray-500 text-sm text-center mb-6">
+        <p className="text-[color:var(--pc-muted)] text-sm text-center mb-6">
           Revisa también la carpeta de spam. El enlace caduca en 1 hora.
         </p>
         <button
@@ -72,7 +75,7 @@ export default function LoginForm() {
             setResetSent(false);
             setError('');
           }}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          className="w-full bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] py-2 px-4 rounded-md hover:bg-[color:var(--pc-accent-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)] cursor-pointer"
         >
           Volver a iniciar sesión
         </button>
@@ -81,13 +84,13 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6">
+    <div className="max-w-md mx-auto p-6 bg-[color:var(--pc-surface)]/90">
+      <h2 className="text-2xl font-bold text-center mb-6 text-[color:var(--pc-text-on-dark)]">
         {forgotPassword ? 'Recuperar contraseña' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 text-red-100 rounded">
           {error}
         </div>
       )}
@@ -95,7 +98,10 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && !forgotPassword && (
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="displayName"
+              className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+            >
               Nombre
             </label>
             <input
@@ -103,14 +109,17 @@ export default function LoginForm() {
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
               required={!isLogin}
             />
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+          >
             Email
           </label>
           <input
@@ -118,14 +127,17 @@ export default function LoginForm() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
             required
           />
         </div>
 
         {!forgotPassword && (
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+            >
               Contraseña
             </label>
             <input
@@ -133,7 +145,7 @@ export default function LoginForm() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
               required={!forgotPassword}
               minLength={6}
             />
@@ -143,7 +155,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] py-2 px-4 rounded-md hover:bg-[color:var(--pc-accent-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           {loading
             ? 'Procesando...'
@@ -164,7 +176,7 @@ export default function LoginForm() {
                 setForgotPassword(true);
                 setError('');
               }}
-              className="text-blue-600 hover:text-blue-800 text-sm"
+              className="text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] text-sm"
             >
               ¿Olvidaste tu contraseña?
             </button>
@@ -177,7 +189,7 @@ export default function LoginForm() {
               setForgotPassword(false);
               setError('');
             }}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] text-sm"
           >
             Volver a iniciar sesión
           </button>
@@ -188,7 +200,7 @@ export default function LoginForm() {
               setIsLogin(!isLogin);
               setError('');
             }}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] text-sm"
           >
             {isLogin
               ? '¿No tienes cuenta? Regístrate'

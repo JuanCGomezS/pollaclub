@@ -53,10 +53,10 @@ export default function HowItWorks() {
   return (
     <section className="mt-10 max-w-5xl mx-auto text-left">
       <div className="mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-[color:var(--pc-text-on-dark)] mb-3 text-center">
           ¿Cómo funciona PollaClub?
         </h2>
-        <p className="text-gray-600 text-center max-w-2xl mx-auto">
+        <p className="text-[color:var(--pc-muted)] text-center max-w-2xl mx-auto">
           PollaClub es una plataforma para organizar pollas deportivas entre amigos. Tú pones los
           participantes, nosotros nos encargamos de los partidos, los puntos y las tablas de
           posiciones.
@@ -67,28 +67,30 @@ export default function HowItWorks() {
         {steps.map((step, index) => (
           <div
             key={step.title}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col h-full transition transform hover:-translate-y-1 hover:shadow-lg"
+            className="bg-[color:var(--pc-surface)]/80 rounded-xl shadow-sm border border-[color:var(--pc-main-dark)]/60 p-5 flex flex-col h-full transition transform hover:-translate-y-1 hover:shadow-lg"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] font-bold">
                 {index + 1}
               </span>
-              <span className="text-xs uppercase tracking-wide text-blue-600 font-semibold">
+              <span className="text-xs uppercase tracking-wide text-[color:var(--pc-accent)] font-semibold">
                 Paso {index + 1}
               </span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
-            <p className="text-sm text-gray-600">{step.description}</p>
+            <h3 className="text-lg font-semibold text-[color:var(--pc-text-on-dark)] mb-2">
+              {step.title}
+            </h3>
+            <p className="text-sm text-[color:var(--pc-muted)]">{step.description}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+      <div className="bg-[color:var(--pc-surface)]/80 rounded-2xl shadow-sm border border-[color:var(--pc-main-dark)]/60 p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h3 className="text-lg md:text-xl font-semibold text-gray-900">
+          <h3 className="text-lg md:text-xl font-semibold text-[color:var(--pc-text-on-dark)]">
             Lo que debe saber cada participante
           </h3>
-          <div className="inline-flex rounded-full bg-gray-100 p-1 text-sm">
+          <div className="inline-flex rounded-full bg-[color:var(--pc-main-dark)]/60 p-1 text-sm">
             {phases.map((phase) => (
               <button
                 key={phase.id}
@@ -96,8 +98,8 @@ export default function HowItWorks() {
                 onClick={() => setActivePhase(phase.id)}
                 className={`px-3 py-1.5 rounded-full font-medium transition text-xs md:text-sm ${
                   activePhase === phase.id
-                    ? 'bg-white text-blue-700 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] shadow-sm'
+                    : 'text-[color:var(--pc-muted)] hover:text-[color:var(--pc-text-on-dark)]'
                 }`}
               >
                 {phase.label}
@@ -108,18 +110,20 @@ export default function HowItWorks() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-3">{currentPhase.title}</h4>
-            <ul className="space-y-2 text-sm text-gray-700">
+            <h4 className="text-md font-semibold text-[color:var(--pc-text-on-dark)] mb-3">
+              {currentPhase.title}
+            </h4>
+            <ul className="space-y-2 text-sm text-[color:var(--pc-muted)]">
               {currentPhase.items.map((item) => (
                 <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="mt-1 h-2 w-2 rounded-full bg-[color:var(--pc-accent)]" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900 space-y-2">
+          <div className="bg-[color:var(--pc-main-dark)]/60 border border-[color:var(--pc-main-dark)] rounded-xl p-4 text-sm text-[color:var(--pc-muted)] space-y-2">
             <p className="font-semibold">Reglas generales de los puntos</p>
             <ul className="list-disc list-inside space-y-1">
               <li>

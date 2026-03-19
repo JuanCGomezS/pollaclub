@@ -123,8 +123,8 @@ export default function CreateGroupForm() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--pc-accent)] mx-auto"></div>
+          <p className="mt-4 text-[color:var(--pc-muted)]">Cargando...</p>
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ export default function CreateGroupForm() {
 
   if (!canCreate) {
     return (
-      <div className="max-w-4xl mx-auto mt-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div className="max-w-4xl mx-auto mt-8 p-6 bg-red-900/40 border border-red-500/60 text-red-100 rounded">
         <p>No tienes permiso para crear grupos.</p>
       </div>
     );
@@ -140,7 +140,7 @@ export default function CreateGroupForm() {
 
   if (competitions.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto mt-8 p-6 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+      <div className="max-w-4xl mx-auto mt-8 p-6 bg-yellow-900/30 border border-yellow-500/60 text-yellow-100 rounded">
         <p>No hay competiciones disponibles. Contacta al administrador.</p>
       </div>
     );
@@ -148,24 +148,32 @@ export default function CreateGroupForm() {
 
   return (
     <div className="max-w-2xl mx-auto mt-8 p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Crear Nuevo Grupo</h1>
+      <h1 className="text-3xl font-bold text-[color:var(--pc-text-on-dark)] mb-6">
+        Crear Nuevo Grupo
+      </h1>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-3 bg-red-900/40 border border-red-500/60 text-red-100 rounded">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-[color:var(--pc-surface)]/80 p-6 rounded-lg shadow-md border border-[color:var(--pc-main-dark)]/60"
+      >
         <div>
-          <label htmlFor="competitionId" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="competitionId"
+            className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+          >
             Competición *
           </label>
           <select
             id="competitionId"
             value={formData.competitionId}
             onChange={(e) => setFormData(prev => ({ ...prev, competitionId: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
             required
           >
             <option value="">Selecciona una competición</option>
@@ -178,7 +186,10 @@ export default function CreateGroupForm() {
         </div>
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+          >
             Nombre del Grupo *
           </label>
           <input
@@ -186,7 +197,7 @@ export default function CreateGroupForm() {
             id="name"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
             placeholder="Ej: Amigos del trabajo"
             required
             minLength={3}
@@ -194,12 +205,17 @@ export default function CreateGroupForm() {
           />
         </div>
 
-        <div className="border-t pt-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Configuración de Puntos</h2>
+        <div className="border-t border-[color:var(--pc-main-dark)]/60 pt-4">
+          <h2 className="text-lg font-semibold text-[color:var(--pc-text-on-dark)] mb-4">
+            Configuración de Puntos
+          </h2>
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="pointsExactScore" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsExactScore"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Marcador Exacto *
               </label>
               <input
@@ -207,16 +223,21 @@ export default function CreateGroupForm() {
                 id="pointsExactScore"
                 value={formData.pointsExactScore}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsExactScore: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="1"
                 max="20"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el resultado exacto (ej: 2-1)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el resultado exacto (ej: 2-1)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsWinner" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsWinner"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Ganador *
               </label>
               <input
@@ -224,16 +245,21 @@ export default function CreateGroupForm() {
                 id="pointsWinner"
                 value={formData.pointsWinner}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsWinner: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="1"
                 max="10"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar quién gana (sin acertar marcador)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar quién gana (sin acertar marcador)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsGoalDifference" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsGoalDifference"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Diferencia de Goles (Opcional)
               </label>
               <input
@@ -241,24 +267,31 @@ export default function CreateGroupForm() {
                 id="pointsGoalDifference"
                 value={formData.pointsGoalDifference}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsGoalDifference: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="5"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos adicionales por acertar la diferencia de goles (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos adicionales por acertar la diferencia de goles (0 para desactivar)
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="border-t pt-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Pronósticos Bonus (Opcional)</h2>
-          <p className="text-sm text-gray-600 mb-4">
+        <div className="border-t border-[color:var(--pc-main-dark)]/60 pt-4">
+          <h2 className="text-lg font-semibold text-[color:var(--pc-text-on-dark)] mb-4">
+            Pronósticos Bonus (Opcional)
+          </h2>
+          <p className="text-sm text-[color:var(--pc-muted)] mb-4">
             Configura los puntos para pronósticos bonus. Si dejas el valor en 0, esa opción no estará disponible para los participantes.
           </p>
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="pointsWinnerBonus" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsWinnerBonus"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Ganador de la Competición
               </label>
               <input
@@ -266,15 +299,20 @@ export default function CreateGroupForm() {
                 id="pointsWinnerBonus"
                 value={formData.pointsWinnerBonus}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsWinnerBonus: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="50"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el ganador final de la competición (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el ganador final de la competición (0 para desactivar)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsRunnerUp" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsRunnerUp"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Segundo Lugar
               </label>
               <input
@@ -282,15 +320,20 @@ export default function CreateGroupForm() {
                 id="pointsRunnerUp"
                 value={formData.pointsRunnerUp}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsRunnerUp: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="50"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el segundo lugar (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el segundo lugar (0 para desactivar)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsThirdPlace" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsThirdPlace"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Tercer Lugar
               </label>
               <input
@@ -298,15 +341,20 @@ export default function CreateGroupForm() {
                 id="pointsThirdPlace"
                 value={formData.pointsThirdPlace}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsThirdPlace: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="50"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el tercer lugar (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el tercer lugar (0 para desactivar)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsTopScorer" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsTopScorer"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Máximo Goleador
               </label>
               <input
@@ -314,15 +362,20 @@ export default function CreateGroupForm() {
                 id="pointsTopScorer"
                 value={formData.pointsTopScorer}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsTopScorer: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="50"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el máximo goleador (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el máximo goleador (0 para desactivar)
+              </p>
             </div>
 
             <div>
-              <label htmlFor="pointsTopAssister" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="pointsTopAssister"
+                className="block text-sm font-medium text-[color:var(--pc-muted)] mb-1"
+              >
                 Puntos por Acertar Máximo Asistidor
               </label>
               <input
@@ -330,11 +383,13 @@ export default function CreateGroupForm() {
                 id="pointsTopAssister"
                 value={formData.pointsTopAssister}
                 onChange={(e) => setFormData(prev => ({ ...prev, pointsTopAssister: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-md bg-[color:var(--pc-surface)] text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
                 min="0"
                 max="50"
               />
-              <p className="mt-1 text-xs text-gray-500">Puntos por acertar el máximo asistidor (0 para desactivar)</p>
+              <p className="mt-1 text-xs text-[color:var(--pc-muted)]">
+                Puntos por acertar el máximo asistidor (0 para desactivar)
+              </p>
             </div>
           </div>
         </div>
@@ -343,13 +398,13 @@ export default function CreateGroupForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-[color:var(--pc-accent)] text-[color:var(--pc-text-strong)] py-2 px-4 rounded-md hover:bg-[color:var(--pc-accent-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? 'Creando...' : 'Crear Grupo'}
           </button>
           <a
             href={getRoute('/groups')}
-            className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center"
+            className="flex-1 bg-[color:var(--pc-main-dark)] text-[color:var(--pc-text-on-dark)] py-2 px-4 rounded-md hover:bg-[color:var(--pc-main)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-main-dark)] text-center"
           >
             Cancelar
           </a>

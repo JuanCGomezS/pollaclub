@@ -2,16 +2,18 @@
 import Layout from '../layouts/Layout.astro';
 import HomeGroupsLink from '../components/react/HomeGroupsLink';
 import HowItWorks from '../components/react/HowItWorks';
+
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <Layout title="PollaClub - Sistema de Pronósticos Deportivos" showHeader={true}>
-  <main class="min-h-screen bg-gray-50 flex items-center justify-center">
+  <main class="min-h-screen flex items-center justify-center bg-[color:var(--pc-surface)]">
     <div class="text-center space-y-4">
-      <h1 class="text-5xl font-bold text-gray-900 mb-4">
-        PollaClub
-      </h1>
-      <p class="text-xl text-gray-600 mb-4">
-        Sistema de pronósticos deportivos entre amigos
+      <div class="flex justify-center">
+        <img src={baseUrl + 'pollaclub.png'} alt="PollaClub" class="h-48 w-auto mx-auto" />
+      </div>
+      <p class="text-xl text-[color:var(--pc-muted)]/90 mb-4">
+        Sistema de pronósticos deportivos
       </p>
       <div class="flex justify-center">
         <HomeGroupsLink client:load />

@@ -132,20 +132,20 @@ export default function MatchCard({
   const getStatusBadge = () => {
     if (match.status === 'live') {
       return (
-        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded font-semibold animate-pulse">
+        <span className="text-xs px-2 py-1 rounded-full font-semibold animate-pulse bg-[color:var(--pc-main)]/15 text-[color:var(--pc-accent)] border border-[color:var(--pc-accent)]/60">
           EN VIVO
         </span>
       );
     }
     if (match.status === 'finished') {
       return (
-        <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded">
+        <span className="text-xs px-2 py-1 rounded-full bg-[color:var(--pc-main-dark)]/20 text-[color:var(--pc-muted)] border border-[color:var(--pc-main-dark)]/60">
           Finalizado
         </span>
       );
     }
     return (
-      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+      <span className="text-xs px-2 py-1 rounded-full bg-[color:var(--pc-surface)]/40 text-[color:var(--pc-muted)] border border-[color:var(--pc-main)]/40">
         Por Jugar
       </span>
     );
@@ -187,16 +187,23 @@ export default function MatchCard({
   const minuteStatus = calculatedMinute?.status;
 
   return (
-    <div className={`p-3 bg-white border rounded-lg ${match.status === 'live' ? 'border-green-300 shadow-sm' : 'border-gray-200'
-      }`}>
+    <div
+      className={`p-4 rounded-xl border shadow-sm bg-[color:var(--pc-surface)]/80 backdrop-blur ${
+        match.status === 'live'
+          ? 'border-[color:var(--pc-accent)]/70 shadow-[0_0_0_1px_rgba(244,197,66,0.15)]'
+          : 'border-[color:var(--pc-main-dark)]/60'
+      }`}
+    >
       <div className="flex justify-between items-center mb-3">
-        <span className="text-xs text-gray-500">{formatDate(match.scheduledTime)}</span>
+        <span className="text-xs text-[color:var(--pc-muted)]/80">
+          {formatDate(match.scheduledTime)}
+        </span>
         {getStatusBadge()}
       </div>
 
       {match.status === 'live' && displayMinute != null && (
         <div className="text-center mb-3">
-          <span className="text-sm font-semibold text-green-700">
+          <span className="text-sm font-semibold text-[color:var(--pc-accent)]">
             {formatMatchMinute(displayMinute, displayExtraTime, displayExtraTimeTotal, minuteStatus) || `${displayMinute}'`}
           </span>
         </div>
@@ -207,7 +214,7 @@ export default function MatchCard({
           <img
             src={team1ImageUrls[team1ImageIndex] || placeholderUrl}
             alt={team1Name}
-            className="w-12 h-12 object-contain mb-1"
+            className="w-12 h-12 object-contain mb-1 drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)]"
             onError={() => {
               if (team1ImageIndex < team1ImageUrls.length - 1) {
                 setTeam1ImageIndex(team1ImageIndex + 1);
@@ -216,37 +223,39 @@ export default function MatchCard({
               }
             }}
           />
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm font-semibold text-[color:var(--pc-text-on-dark)]">
             {team1Name}
           </span>
         </div>
 
         {isMatchStarted && result ? (
           <div>
-            <div className="flex items-center rounded-lg px-3 py-2 ">
+            <div className="flex items-center rounded-lg px-3 py-2">
               <div className="text-center min-w-[60px]">
-                <span className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition">
+                <span className="text-lg font-bold text-[color:var(--pc-text-on-dark)]">
                   {result.team1Score}
                 </span>
                 {userPrediction && (
-                  <span className="text-sm text-gray-500 ml-1">
+                  <span className="text-sm text-[color:var(--pc-muted)] ml-1">
                     ({userPrediction.team1Score})
                   </span>
                 )}
               </div>
-              <span className="text-gray-400 font-medium">vs</span>
+              <span className="text-[color:var(--pc-muted)]/80 font-medium">vs</span>
               <div className="text-center min-w-[60px]">
-                <span className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition">
+                <span className="text-lg font-bold text-[color:var(--pc-text-on-dark)]">
                   {result.team2Score}
                 </span>
                 {userPrediction && (
-                  <span className="text-sm text-gray-500 ml-1">
+                  <span className="text-sm text-[color:var(--pc-muted)] ml-1">
                     ({userPrediction.team2Score})
                   </span>
                 )}
               </div>
             </div>
-            <div className="text-sm text-blue-600 mt-1 text-center cursor-pointer" onClick={() => setIsLeaderboardOpen(true)}
+            <div
+              className="text-sm text-[color:var(--pc-accent)] mt-1 text-center cursor-pointer hover:text-[color:var(--pc-accent-dark)]"
+              onClick={() => setIsLeaderboardOpen(true)}
               title="Click para ver tabla de posiciones">
               <h3>Mostrar resultados</h3>
             </div>
@@ -259,18 +268,18 @@ export default function MatchCard({
               value={team1Score}
               onChange={(e) => setTeam1Score(e.target.value)}
               placeholder="0"
-              className="w-14 px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-14 px-2 py-1.5 text-sm border border-[color:var(--pc-main-dark)]/60 rounded text-center bg-[color:var(--pc-surface)]/60 text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
               required
               disabled={isSaving}
             />
-            <span className="text-gray-400 font-medium">vs</span>
+            <span className="text-[color:var(--pc-muted)]/80 font-medium">vs</span>
             <input
               type="number"
               min="0"
               value={team2Score}
               onChange={(e) => setTeam2Score(e.target.value)}
               placeholder="0"
-              className="w-14 px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-14 px-2 py-1.5 text-sm border border-[color:var(--pc-main-dark)]/60 rounded text-center bg-[color:var(--pc-surface)]/60 text-[color:var(--pc-text-on-dark)] focus:outline-none focus:ring-2 focus:ring-[color:var(--pc-accent)]"
               required
               disabled={isSaving}
             />
@@ -278,13 +287,13 @@ export default function MatchCard({
         ) : userPrediction ? (
           <>
             <div className="text-center min-w-[60px]">
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-[color:var(--pc-text-on-dark)]">
                 {userPrediction.team1Score}
               </span>
             </div>
-            <span className="text-gray-400 font-medium">vs</span>
+            <span className="text-[color:var(--pc-muted)]/80 font-medium">vs</span>
             <div className="text-center min-w-[60px]">
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-[color:var(--pc-text-on-dark)]">
                 {userPrediction.team2Score}
               </span>
             </div>
@@ -292,11 +301,11 @@ export default function MatchCard({
         ) : (
           <>
             <div className="text-center min-w-[60px]">
-              <span className="text-sm text-gray-400">-</span>
+              <span className="text-sm text-[color:var(--pc-muted)]/60">-</span>
             </div>
-            <span className="text-gray-400 font-medium">vs</span>
+            <span className="text-[color:var(--pc-muted)]/80 font-medium">vs</span>
             <div className="text-center min-w-[60px]">
-              <span className="text-sm text-gray-400">-</span>
+              <span className="text-sm text-[color:var(--pc-muted)]/60">-</span>
             </div>
           </>
         )}
@@ -305,7 +314,7 @@ export default function MatchCard({
           <img
             src={team2ImageUrls[team2ImageIndex] || placeholderUrl}
             alt={team2Name}
-            className="w-12 h-12 object-contain mb-1"
+            className="w-12 h-12 object-contain mb-1 drop-shadow-[0_3px_6px_rgba(0,0,0,0.45)]"
             onError={() => {
               if (team2ImageIndex < team2ImageUrls.length - 1) {
                 setTeam2ImageIndex(team2ImageIndex + 1);
@@ -314,19 +323,19 @@ export default function MatchCard({
               }
             }}
           />
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm font-semibold text-[color:var(--pc-text-on-dark)]">
             {team2Name}
           </span>
         </div>
       </div>
 
       {canEdit && isEditing && (
-        <form onSubmit={handleSubmit} className="mt-4 pt-3 border-t border-gray-200">
+        <form onSubmit={handleSubmit} className="mt-4 pt-3 border-t border-[color:var(--pc-main-dark)]/60">
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-1.5 text-xs font-semibold text-[color:var(--pc-text-strong)] bg-[color:var(--pc-accent)] rounded hover:bg-[color:var(--pc-accent-dark)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Guardando...' : userPrediction ? 'Actualizar' : 'Guardar'}
             </button>
@@ -338,7 +347,7 @@ export default function MatchCard({
                   setTeam1Score(userPrediction.team1Score.toString());
                   setTeam2Score(userPrediction.team2Score.toString());
                 }}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                className="px-3 py-1.5 text-xs font-medium text-[color:var(--pc-muted)] bg-[color:var(--pc-main-dark)]/60 rounded hover:bg-[color:var(--pc-main-dark)]"
                 disabled={isSaving}
               >
                 Cancelar
@@ -351,7 +360,7 @@ export default function MatchCard({
       {canEdit && !isEditing && userPrediction && !isMatchStarted && (
         <button
           onClick={() => setIsEditing(true)}
-          className="w-full mt-3 pt-3 border-t border-gray-200 text-xs text-blue-600 hover:text-blue-700 font-medium"
+          className="w-full mt-3 pt-3 border-t border-[color:var(--pc-main-dark)]/60 text-xs text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] font-medium"
         >
           Editar pronóstico
         </button>
@@ -360,7 +369,7 @@ export default function MatchCard({
       {canEdit && !isEditing && !userPrediction && !isMatchStarted && (
         <button
           onClick={() => setIsEditing(true)}
-          className="w-full mt-3 pt-3 border-t border-gray-200 text-xs text-blue-600 hover:text-blue-700 font-medium"
+          className="w-full mt-3 pt-3 border-t border-[color:var(--pc-main-dark)]/60 text-xs text-[color:var(--pc-accent)] hover:text-[color:var(--pc-accent-dark)] font-medium"
         >
           Agregar pronóstico
         </button>

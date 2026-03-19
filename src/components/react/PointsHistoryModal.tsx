@@ -45,7 +45,7 @@ export default function PointsHistoryModal({
     getTeamsForCompetition(competitionId).then((teams) => {
       if (cancelled) return;
       const map = new Map<string, string>();
-      teams.forEach((t) => map.set(t.id, t.shortName || t.name));
+      teams.forEach((t) => map.set(t.id, t.name || t.shortName || '?'));
       setTeamNamesMap(map);
     });
     return () => {
@@ -91,14 +91,16 @@ export default function PointsHistoryModal({
 
   const modalTitle = (
     <div className="flex items-center gap-3">
-      <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 text-gray-700 font-semibold text-sm">
+      <span className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full overflow-hidden bg-[color:var(--pc-main-dark)]/60 text-[color:var(--pc-muted)] font-semibold text-sm">
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
         ) : (
           getInitial(userName)
         )}
       </span>
-      <span>Historial de puntos - {userName}</span>
+      <span className="text-[color:var(--pc-text-on-dark)]">
+        Historial de puntos - {userName}
+      </span>
     </div>
   );
 
@@ -106,49 +108,55 @@ export default function PointsHistoryModal({
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
       <div className="space-y-4">
         {rows.length === 0 && totalBonus === 0 ? (
-          <p className="text-gray-500 text-center py-4">
+          <p className="text-[color:var(--pc-muted)] text-center py-4">
             No hay puntos registrados aún.
           </p>
         ) : (
           <>
             {rows.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                <h4 className="text-sm font-semibold text-[color:var(--pc-text-on-dark)] mb-2">
                   Pronósticos de partidos
                 </h4>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200 text-sm">
-                    <thead className="bg-gray-50">
+                {rows.length > 0 && (
+                  <p className="my-2 text-xs text-[color:var(--pc-muted)]">
+                    Haz hover sobre los puntos para ver el detalle (exacto, ganador,
+                    diferencia).
+                  </p>
+                )}
+                <div className="overflow-x-auto rounded-lg border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/80">
+                  <table className="min-w-full divide-y divide-[color:var(--pc-main-dark)]/60 text-sm">
+                    <thead className="bg-[color:var(--pc-main-dark)]/60">
                       <tr>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-[color:var(--pc-muted)] uppercase">
                           Partido
                         </th>
-                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-3 py-2 text-center text-xs font-semibold text-[color:var(--pc-muted)] uppercase">
                           Resultado
                         </th>
-                        <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-3 py-2 text-center text-xs font-semibold text-[color:var(--pc-muted)] uppercase">
                           Pronóstico
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                        <th className="px-3 py-2 text-right text-xs font-semibold text-[color:var(--pc-muted)] uppercase">
                           Puntos
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-[color:var(--pc-surface)] divide-y divide-[color:var(--pc-main-dark)]/40">
                       {rows.map((row, i) => (
                         <tr key={i}>
-                          <td className="px-3 py-2 text-gray-900 whitespace-nowrap">
+                          <td className="px-3 py-2 text-[color:var(--pc-text-on-dark)] whitespace-nowrap">
                             {row.matchLabel}
                           </td>
-                          <td className="px-3 py-2 text-center text-gray-600">
+                          <td className="px-3 py-2 text-center text-[color:var(--pc-muted)]">
                             {row.result}
                           </td>
-                          <td className="px-3 py-2 text-center text-gray-600">
+                          <td className="px-3 py-2 text-center text-[color:var(--pc-muted)]">
                             {row.prediction}
                           </td>
                           <td className="px-3 py-2 text-right">
                             <span
-                              className="font-semibold text-green-600"
+                              className="font-semibold text-[color:var(--pc-accent)]"
                               title={
                                 row.breakdown
                                   ? [
@@ -172,23 +180,17 @@ export default function PointsHistoryModal({
                     </tbody>
                   </table>
                 </div>
-                {rows.length > 0 && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Haz hover sobre los puntos para ver el detalle (exacto, ganador,
-                    diferencia).
-                  </p>
-                )}
               </div>
             )}
 
             {totalBonus > 0 && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
-                <h4 className="text-sm font-semibold text-amber-800 mb-1">
+              <div className="rounded-lg border border-[color:var(--pc-accent)]/70 bg-[color:var(--pc-main-dark)]/40 p-3">
+                <h4 className="text-sm font-semibold text-[color:var(--pc-text-on-dark)] mb-1">
                   Pronósticos bonus
                 </h4>
-                <p className="text-amber-900 font-medium">+{totalBonus} pts</p>
+                <p className="text-[color:var(--pc-accent)] font-medium">+{totalBonus} pts</p>
                 {hasBonusBreakdown && bonus?.pointsBreakdown && (
-                  <ul className="mt-2 text-xs text-amber-800 space-y-0.5">
+                  <ul className="mt-2 text-xs text-[color:var(--pc-muted)] space-y-0.5">
                     {(
                       Object.entries(bonus.pointsBreakdown) as [string, number][]
                     )
@@ -203,8 +205,8 @@ export default function PointsHistoryModal({
               </div>
             )}
 
-            <div className="flex justify-end border-t pt-3">
-              <span className="text-base font-bold text-gray-900">
+            <div className="flex justify-end border-t border-[color:var(--pc-main-dark)]/60 pt-3">
+              <span className="text-base font-bold text-[color:var(--pc-text-on-dark)]">
                 Total: {total} pts
               </span>
             </div>

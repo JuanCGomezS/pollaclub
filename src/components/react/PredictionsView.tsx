@@ -115,8 +115,8 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Cargando partidos...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[color:var(--pc-accent)] mx-auto" />
+          <p className="mt-4 text-[color:var(--pc-muted)]">Cargando partidos...</p>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
 
   if (error) {
     return (
-      <div className="p-6 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div className="p-6 rounded-xl border border-red-500/50 bg-red-900/40 text-red-100">
         <p>{error}</p>
       </div>
     );
@@ -132,7 +132,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
 
   if (!group) {
     return (
-      <div className="p-6 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+      <div className="p-6 rounded-xl border border-[color:var(--pc-accent)]/60 bg-[color:var(--pc-surface)]/80 text-[color:var(--pc-muted)]">
         <p>No se pudo cargar el grupo.</p>
       </div>
     );
@@ -172,7 +172,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
 
   return (
     <div className="space-y-4">
-      <nav className="flex flex-wrap gap-1 border-b border-gray-200 pb-2">
+      <nav className="flex flex-wrap gap-1 border-b border-[color:var(--pc-main-dark)]/50 pb-2">
         {subTabs.map(({ id, label, count }) => (
           <button
             key={id}
@@ -180,13 +180,13 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
             onClick={() => setSubTab(id)}
             className={`px-3 py-2 text-sm font-medium rounded-t-lg transition ${
               subTab === id
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-700'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] border-b-2 border-[color:var(--pc-accent)] shadow-sm'
+                : 'text-[color:var(--pc-muted)]/80 hover:text-[color:var(--pc-text-on-dark)] hover:bg-[color:var(--pc-main-dark)]/40'
             }`}
           >
             {label}
             {count != null && count > 0 && (
-              <span className="ml-1.5 text-gray-500 font-normal">({count})</span>
+              <span className="ml-1.5 text-[color:var(--pc-muted)]/80 font-normal">({count})</span>
             )}
           </button>
         ))}
@@ -195,7 +195,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
       {subTab === 'live' && (
         <section>
           {liveMatches.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {liveMatches.map((match) => (
                 <MatchCard
                   key={match.id}
@@ -210,8 +210,8 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No hay partidos en vivo.</p>
+            <div className="text-center py-12 rounded-xl border border-dashed border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/60">
+              <p className="text-[color:var(--pc-muted)]">No hay partidos en vivo.</p>
             </div>
           )}
         </section>
@@ -220,7 +220,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
       {subTab === 'upcoming' && (
         <section>
           {upcomingMatches.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {upcomingMatches.map((match) => (
                 <MatchCard
                   key={match.id}
@@ -235,8 +235,8 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No hay próximos partidos.</p>
+            <div className="text-center py-12 rounded-xl border border-dashed border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/60">
+              <p className="text-[color:var(--pc-muted)]">No hay próximos partidos.</p>
             </div>
           )}
         </section>
@@ -245,7 +245,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
       {subTab === 'finished' && (
         <section>
           {finishedMatches.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {finishedMatches.map((match) => (
                 <MatchCard
                   key={match.id}
@@ -260,8 +260,8 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No hay partidos finalizados.</p>
+            <div className="text-center py-12 rounded-xl border border-dashed border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/60">
+              <p className="text-[color:var(--pc-muted)]">No hay partidos finalizados.</p>
             </div>
           )}
         </section>
