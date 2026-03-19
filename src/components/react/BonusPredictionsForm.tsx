@@ -8,7 +8,7 @@ import {
   saveBonusPrediction,
   type BonusPredictionInput
 } from '../../lib/bonus-predictions';
-import { getPlayerNames, getTeamNames } from '../../lib/competition-data';
+import { getPlayerOptionsWithTeam, getTeamNames } from '../../lib/competition-data';
 import { getCompetition } from '../../lib/competitions';
 import type { BonusPrediction, Competition, Group } from '../../lib/types';
 import Modal from './Modal';
@@ -18,10 +18,12 @@ interface BonusPredictionsFormProps {
   group: Group;
 }
 
-function filterOptions(options: string[], query: string): string[] {
+type SelectOption = { label: string; value: string };
+
+function filterOptions(options: SelectOption[], query: string): SelectOption[] {
   if (!query.trim()) return options;
   const q = query.trim().toLowerCase();
-  return options.filter((opt) => opt.toLowerCase().includes(q));
+  return options.filter((opt) => opt.label.toLowerCase().includes(q));
 }
 
 function FilterableSelect({
@@ -32,7 +34,7 @@ function FilterableSelect({
   placeholder = 'Seleccionar...'
 }: {
   label: string;
-  options: string[];
+  options: SelectOption[];
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
@@ -41,6 +43,7 @@ function FilterableSelect({
   const [filter, setFilter] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const filtered = filterOptions(options, filter);
+  const selectedLabel = value ? options.find((o) => o.value === value)?.label : undefined;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -60,7 +63,7 @@ function FilterableSelect({
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-[color:var(--pc-main-dark)]/60 rounded-lg bg-[color:var(--pc-surface)] text-left text-[color:var(--pc-text-on-dark)] focus:ring-2 focus:ring-[color:var(--pc-accent)] focus:border-[color:var(--pc-accent)]"
       >
-        <span className={value ? '' : 'text-[color:var(--pc-muted)]'}>{value || placeholder}</span>
+        <span className={value ? '' : 'text-[color:var(--pc-muted)]'}>{value ? selectedLabel ?? value : placeholder}</span>
         <span className="text-[color:var(--pc-muted)]">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
@@ -88,19 +91,19 @@ function FilterableSelect({
               </button>
             </li>
             {filtered.map((opt) => (
-              <li key={opt}>
+              <li key={opt.value}>
                 <button
                   type="button"
                   onClick={() => {
-                    onChange(opt);
+                    onChange(opt.value);
                     setOpen(false);
                     setFilter('');
                   }}
                   className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[color:var(--pc-main-dark)]/40 ${
-                    value === opt ? 'bg-[color:var(--pc-main)]/40 font-medium' : ''
+                    value === opt.value ? 'bg-[color:var(--pc-main)]/40 font-medium' : ''
                   }`}
                 >
-                  {opt}
+                  {opt.label}
                 </button>
               </li>
             ))}
@@ -125,7 +128,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
   const [loadError, setLoadError] = useState('');
   
   const [teamOptions, setTeamOptions] = useState<string[]>([]);
-  const [playerOptions, setPlayerOptions] = useState<string[]>([]);
+  const [playerOptions, setPlayerOptions] = useState<SelectOption[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
 
   const [isAllBonusModalOpen, setIsAllBonusModalOpen] = useState(false);
@@ -150,7 +153,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
           isBonusLocked(group.competitionId),
           getBonusPrediction(groupId, user.uid),
           getTeamNames(group.competitionId),
-          getPlayerNames(group.competitionId)
+          getPlayerOptionsWithTeam(group.competitionId)
         ]);
         if (cancelled) return;
         setCompetition(comp ?? null);
@@ -417,7 +420,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
               {b.hasWinner && (
                 <FilterableSelect
                   label="Ganador de la competición"
-                  options={teamOptions}
+                  options={teamOptions.map((t) => ({ label: t, value: t }))}
                   value={form.winner ?? ''}
                   onChange={(v) => setForm((f) => ({ ...f, winner: v }))}
                   placeholder="Seleccionar equipo"
@@ -426,7 +429,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
               {b.hasRunnerUp && (
                 <FilterableSelect
                   label="Subcampeón"
-                  options={teamOptions}
+                  options={teamOptions.map((t) => ({ label: t, value: t }))}
                   value={form.runnerUp ?? ''}
                   onChange={(v) => setForm((f) => ({ ...f, runnerUp: v }))}
                   placeholder="Seleccionar equipo"
@@ -435,7 +438,7 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
               {b.hasThirdPlace && (
                 <FilterableSelect
                   label="Tercer lugar"
-                  options={teamOptions}
+                  options={teamOptions.map((t) => ({ label: t, value: t }))}
                   value={form.thirdPlace ?? ''}
                   onChange={(v) => setForm((f) => ({ ...f, thirdPlace: v }))}
                   placeholder="Seleccionar equipo"
@@ -544,10 +547,14 @@ export default function BonusPredictionsForm({ groupId, group }: BonusPrediction
                       {row.bonus?.thirdPlace ?? '—'}
                     </td>
                     <td className="px-3 py-2 text-[color:var(--pc-muted)] whitespace-nowrap">
-                      {row.bonus?.topScorer ?? '—'}
+                      {row.bonus?.topScorer
+                        ? playerOptions.find((o) => o.value === row.bonus?.topScorer)?.label ?? row.bonus?.topScorer
+                        : '—'}
                     </td>
                     <td className="px-3 py-2 text-[color:var(--pc-muted)] whitespace-nowrap">
-                      {row.bonus?.topAssister ?? '—'}
+                      {row.bonus?.topAssister
+                        ? playerOptions.find((o) => o.value === row.bonus?.topAssister)?.label ?? row.bonus?.topAssister
+                        : '—'}
                     </td>
                     <td className="px-3 py-2 text-right whitespace-nowrap">
                       <span className={`font-semibold ${(row.bonus?.points ?? 0) > 0 ? 'text-[color:var(--pc-accent)]' : 'text-[color:var(--pc-muted)]'}`}>
