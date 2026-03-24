@@ -146,6 +146,7 @@ export default function GroupDashboard() {
                 {group.code}
               </span>
             </p>
+            <p className="text-[color:var(--pc-muted)] mt-1">participantes: {group.participants.length} / {group.maxParticipants}</p>
           </div>
           <div className="text-right">
             {group.isActive ? (

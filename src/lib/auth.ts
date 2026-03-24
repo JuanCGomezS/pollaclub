@@ -36,6 +36,7 @@ export async function registerUser(
       email,
       groups: [],
       canCreateGroups: false,
+      groupCreationSlots: 0,
       createdAt: serverTimestamp()
     });
 

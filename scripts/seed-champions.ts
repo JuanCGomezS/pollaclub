@@ -136,7 +136,16 @@ const CHAMPIONS_PLAYERS: ChampionsPlayer[] = [
   { name: 'Erling Haaland', teamName: 'Manchester City', position: 'Delantero' },
   { name: 'Victor Osimhen', teamName: 'Napoli', position: 'Delantero' },
   { name: 'Gabriel Martinelli', teamName: 'Arsenal', position: 'Delantero' },
-  { name: 'Jens Hauge', teamName: 'Bodø/Glimt', position: 'Delantero' }
+  { name: 'Jens Hauge', teamName: 'Bodø/Glimt', position: 'Delantero' },
+  { name: 'Julián Álvarez', teamName: 'Atlético Madrid', position: 'Delantero' },
+  { name: 'Achraf Hakimi', teamName: 'PSG', position: 'Defensor' },
+  { name: 'Michael Olise', teamName: 'Bayern Munich', position: 'Delantero' },
+  { name: 'Robert Lewandowski', teamName: 'Barcelona', position: 'Delantero' },
+  { name: 'Lamine Yamal', teamName: 'Barcelona', position: 'Delantero' },
+  { name: 'Fermín López', teamName: 'Barcelona', position: 'Delantero' },
+  { name: 'Serge Gnabry', teamName: 'Bayern Munich', position: 'Delantero' },
+  { name: 'Vinícius', teamName: 'Real Madrid', position: 'Delantero' },
+  { name: 'Federico Valverde', teamName: 'Real Madrid', position: 'Delantero' }
 ];
 
 function getTeamDocIdFromName(name: string): string {

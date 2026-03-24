@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { createGroup, canUserCreateGroups } from '../../lib/groups';
+import { createGroup, canUserCreateGroups, getUserGroupPlan } from '../../lib/groups';
 import { getCompetitions } from '../../lib/competitions';
 import { getCurrentUser } from '../../lib/auth';
 import { getRoute } from '../../lib/utils';
@@ -12,6 +12,7 @@ export default function CreateGroupForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [canCreate, setCanCreate] = useState(false);
+  const [planInfo, setPlanInfo] = useState<{ planName: string; maxParticipants: number; slots: number } | null>(null);
   
   const [formData, setFormData] = useState({
     competitionId: '',
@@ -43,6 +44,9 @@ export default function CreateGroupForm() {
         getCompetitions(),
         canUserCreateGroups(user.uid)
       ]);
+
+      const userPlanInfo = await getUserGroupPlan(user.uid);
+      setPlanInfo(userPlanInfo);
 
       if (!hasPermission) {
         setError('No tienes permiso para crear grupos');
@@ -162,6 +166,20 @@ export default function CreateGroupForm() {
         onSubmit={handleSubmit}
         className="space-y-6 bg-[color:var(--pc-surface)]/80 p-6 rounded-lg shadow-md border border-[color:var(--pc-main-dark)]/60"
       >
+        {planInfo && (
+          <div className="p-3 rounded-md border border-[color:var(--pc-accent)]/60 bg-[color:var(--pc-main-dark)]/40 text-sm text-[color:var(--pc-muted)]">
+            <p>
+              <strong className="text-[color:var(--pc-text-on-dark)]">Plan activo:</strong> {planInfo.planName}
+            </p>
+            <p>
+              <strong className="text-[color:var(--pc-text-on-dark)]">Máximo de participantes:</strong> {planInfo.maxParticipants}
+            </p>
+            <p>
+              <strong className="text-[color:var(--pc-text-on-dark)]">Grupos disponibles para crear:</strong> {planInfo.slots}
+            </p>
+          </div>
+        )}
+
         <div>
           <label
             htmlFor="competitionId"
