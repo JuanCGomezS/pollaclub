@@ -76,6 +76,14 @@ export async function savePrediction(
     if (match.status !== 'scheduled') {
       throw new Error('No se puede hacer pronóstico: el partido ya inició o finalizó');
     }
+
+    // Validación preventiva para planes con límite por número de partido (ej: free trial)
+    const maxMatchNumber = Number(group.maxMatchNumber || 0);
+    if (maxMatchNumber > 0 && match.matchNumber > maxMatchNumber) {
+      throw new Error(
+        `Tu plan actual permite pronosticar hasta el partido ${maxMatchNumber}. Actualiza tu plan para continuar.`
+      );
+    }
     
     // Verificar si ya existe un pronóstico
     const existingPrediction = await getUserPrediction(groupId, userId, matchId);

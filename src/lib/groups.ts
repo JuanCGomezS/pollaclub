@@ -97,6 +97,31 @@ export async function createGroup(
   settings: Group['settings']
 ): Promise<{ groupId: string; code: string }> {
   try {
+    const userRef = doc(db, 'users', adminUid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      throw new Error('No se encontró configuración del usuario para crear grupo');
+    }
+
+    const userData = userDoc.data();
+    const canCreateGroups = userData.canCreateGroups === true;
+    const purchasedMaxParticipants = Number(userData.purchasedMaxParticipants || 0);
+    const purchasedMaxMatchNumber = Number(userData.purchasedMaxMatchNumber || 0);
+    const slots = Number(userData.groupCreationSlots || 0);
+
+    if (!canCreateGroups) {
+      throw new Error('No tienes permiso para crear grupos');
+    }
+
+    if (purchasedMaxParticipants < 1) {
+      throw new Error('Tu plan no tiene cupo de participantes configurado');
+    }
+
+    if (slots < 1) {
+      throw new Error('No tienes cupos disponibles para crear grupos');
+    }
+
     // Generar código único
     const code = generateGroupCode();
     
@@ -113,6 +138,10 @@ export async function createGroup(
       code,
       adminUid,
       participants: [adminUid],
+      planCode: userData.purchasedPlanCode || 'manual',
+      planName: userData.purchasedPlanName || 'Plan Manual',
+      maxParticipants: purchasedMaxParticipants,
+      ...(purchasedMaxMatchNumber > 0 && { maxMatchNumber: purchasedMaxMatchNumber }),
       isActive: true,
       settings,
       createdAt: now,
@@ -120,9 +149,10 @@ export async function createGroup(
     });
     
     // Actualizar el usuario para agregar el grupo
-    const userRef = doc(db, 'users', adminUid);
     await updateDoc(userRef, {
-      groups: arrayUnion(groupId)
+      groups: arrayUnion(groupId),
+      groupCreationSlots: Math.max(slots - 1, 0),
+      canCreateGroups: slots - 1 > 0
     });
     
     return { groupId, code };
@@ -157,6 +187,17 @@ export async function joinGroupByCode(code: string, userId: string): Promise<Gro
     if (groupData.participants.includes(userId)) {
       throw new Error('Ya eres participante de este grupo');
     }
+
+    // Validar cupo máximo según plan del grupo (incluye admin dentro de participants)
+    if (
+      typeof groupData.maxParticipants === 'number' &&
+      groupData.maxParticipants > 0 &&
+      groupData.participants.length >= groupData.maxParticipants
+    ) {
+      throw new Error(
+        `Este grupo alcanzó su límite de ${groupData.maxParticipants} participantes para el plan actual`
+      );
+    }
     
     // Agregar usuario al grupo
     const groupRef = doc(db, 'groups', groupId);
@@ -182,6 +223,7 @@ export async function joinGroupByCode(code: string, userId: string): Promise<Gro
         email: currentUser.email || '',
         groups: [groupId],
         canCreateGroups: false,
+        groupCreationSlots: 0,
         createdAt: serverTimestamp()
       });
     } else {
@@ -240,9 +282,38 @@ export async function canUserCreateGroups(userId: string): Promise<boolean> {
     }
     
     const userData = userDoc.data();
-    return userData.canCreateGroups === true;
+    const slots = Number(userData.groupCreationSlots || 0);
+    return userData.canCreateGroups === true && slots > 0;
   } catch (error: any) {
     console.error('Error al verificar permiso de creación:', error);
     return false;
+  }
+}
+
+/**
+ * Obtiene la configuración comercial activa del usuario para crear grupos.
+ */
+export async function getUserGroupPlan(userId: string): Promise<{
+  planName: string;
+  maxParticipants: number;
+  slots: number;
+} | null> {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      return null;
+    }
+
+    const userData = userDoc.data();
+    const planName = String(userData.purchasedPlanName || 'Sin plan');
+    const maxParticipants = Number(userData.purchasedMaxParticipants || 0);
+    const slots = Number(userData.groupCreationSlots || 0);
+
+    return { planName, maxParticipants, slots };
+  } catch (error) {
+    console.error('Error al obtener plan del usuario:', error);
+    return null;
   }
 }

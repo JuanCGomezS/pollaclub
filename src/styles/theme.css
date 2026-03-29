@@ -1,4 +1,6 @@
 :root {
+  --pc-header-height: calc(3.5rem + 1px);
+
   --pc-main: #1f7a3e;
   --pc-accent: #f4c542;
 
@@ -9,6 +11,12 @@
   --pc-text-on-dark: #ffffff;
   --pc-muted: #d1d5db;
   --pc-text-strong: #111827;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --pc-header-height: calc(4rem + 1px);
+  }
 }
 
 html,

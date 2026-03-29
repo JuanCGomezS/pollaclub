@@ -130,6 +130,16 @@ export default function GroupDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto mt-8 p-6 bg-[color:var(--pc-surface)]/40">
+      <div className="mb-4 flex justify-end">
+        <a
+          href={getRoute('/groups')}
+          className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/60 px-3 py-2 text-sm font-medium text-[color:var(--pc-muted)] transition hover:border-[color:var(--pc-accent)]/50 hover:text-[color:var(--pc-accent)]"
+        >
+          <span aria-hidden>←</span>
+          Volver a mis grupos
+        </a>
+      </div>
+
       <div className="mb-6">
         <div className="flex justify-between items-start">
           {group.logoUrl && (
@@ -146,6 +156,7 @@ export default function GroupDashboard() {
                 {group.code}
               </span>
             </p>
+            <p className="text-[color:var(--pc-muted)] mt-1">participantes: {group.participants.length} / {group.maxParticipants}</p>
           </div>
           <div className="text-right">
             {group.isActive ? (

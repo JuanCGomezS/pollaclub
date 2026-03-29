@@ -85,6 +85,10 @@ export interface Group {
   code: string;
   adminUid: string;
   participants: string[];
+  planCode?: string;
+  planName?: string;
+  maxParticipants?: number;
+  maxMatchNumber?: number;
   isActive: boolean;
   settings: {
     pointsExactScore: number;
@@ -110,7 +114,12 @@ export interface User {
   email: string;
   avatarUrl?: string;
   groups: string[];
-  canCreateGroups: boolean; // Permiso para crear grupos (habilitado manualmente por admin)
+  canCreateGroups: boolean;
+  purchasedPlanCode?: string;
+  purchasedPlanName?: string;
+  purchasedMaxParticipants?: number;
+  purchasedMaxMatchNumber?: number;
+  groupCreationSlots?: number;
   createdAt: Timestamp;
 }
 

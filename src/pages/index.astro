@@ -1,24 +1,42 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import HomeGroupsLink from '../components/react/HomeGroupsLink';
-import HowItWorks from '../components/react/HowItWorks';
+import PricingSection from "../components/PricingSection.astro";
+import HeroCarousel from "../components/react/HeroCarousel";
+import HomeGroupsLink from "../components/react/HomeGroupsLink";
+import HowItWorks from "../components/react/HowItWorks";
+import Layout from "../layouts/Layout.astro";
+import { getCarouselSlidesFromPublic } from "../lib/carousel-public";
 
 const baseUrl = import.meta.env.BASE_URL;
+const carouselSlides = getCarouselSlidesFromPublic();
 ---
 
 <Layout title="PollaClub - Sistema de Pronósticos Deportivos" showHeader={true}>
-  <main class="min-h-screen flex items-center justify-center bg-[color:var(--pc-surface)]">
-    <div class="text-center space-y-4">
-      <div class="flex justify-center">
-        <img src={baseUrl + 'pollaclub.png'} alt="PollaClub" class="h-48 w-auto mx-auto" />
+  <main class="bg-[color:var(--pc-surface)]">
+    <section class="min-h-[calc(100dvh-var(--pc-header-height))] flex flex-col justify-center py-10 px-4">
+      <div class="max-w-6xl mx-auto w-full text-center space-y-4">
+        <div class="flex justify-center">
+          <img
+            src={baseUrl + "pollaclub.png"}
+            alt="PollaClub"
+            class="h-48 w-auto mx-auto"
+          />
+        </div>
+        <p class="text-xl text-[color:var(--pc-muted)]/90 mb-4">
+          Sistema de pronósticos deportivos
+        </p>
+        <div class="flex justify-center">
+          <HomeGroupsLink client:load />
+        </div>
       </div>
-      <p class="text-xl text-[color:var(--pc-muted)]/90 mb-4">
-        Sistema de pronósticos deportivos
-      </p>
-      <div class="flex justify-center">
-        <HomeGroupsLink client:load />
-      </div>
+    </section>
+
+    <section class="w-full max-w-[min(100%,1400px)] mx-auto px-3 sm:px-6 pb-8">
+      <HeroCarousel client:load slides={carouselSlides} />
+    </section>
+
+    <div class="max-w-6xl mx-auto px-4 pb-10">
       <HowItWorks client:load />
+      <PricingSection />
     </div>
   </main>
 </Layout>

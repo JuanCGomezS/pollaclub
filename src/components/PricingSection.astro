@@ -1,0 +1,131 @@
+---
+import { getWhatsappLink } from '../lib/utils';
+
+type PlanCard = {
+  tag: string;
+  title: string;
+  price: string;
+  description: string;
+  perParticipant: string;
+  idealFor: string;
+  marketingLine: string;
+  highlighted?: boolean;
+};
+
+const plans: PlanCard[] = [
+  {
+    tag: 'Plan de entrada',
+    title: 'Prueba gratis 3 partidos',
+    price: '$0 COP',
+    description: 'Acceso completo durante los 3 primeros partidos del torneo (máximo 5 participantes).',
+    perParticipant: 'Gratis',
+    idealFor: 'Probar la experiencia real antes de pagar',
+    marketingLine: 'Luego puedes actualizar a cualquier plan pago sin perder el progreso del grupo.'
+  },
+  {
+    tag: 'Plan 1-5',
+    title: 'Hasta 5 participantes',
+    price: '$20.000 COP',
+    description: 'Para grupos pequeños que quieren jugar todo el torneo sin complicaciones.',
+    perParticipant: 'desde $4.000 COP',
+    idealFor: 'Familia o amigos cercanos',
+    marketingLine: 'Menos de lo que cuesta un snack por todo el torneo.'
+  },
+  {
+    tag: 'PLAN 1-15 (Mas elegido)',
+    title: 'Hasta 15 participantes',
+    price: '$40.000 COP',
+    description: 'El equilibrio ideal entre precio total y costo por persona para la mayoría de grupos.',
+    perParticipant: 'desde $2.667 COP',
+    idealFor: 'Oficinas, universidades y parches grandes',
+    marketingLine: 'Recomendado: mayor diversión por menor costo individual.',
+    highlighted: true
+  },
+  {
+    tag: 'Plan 1-30',
+    title: 'Hasta 30 participantes',
+    price: '$60.000 COP',
+    description: 'Perfecto cuando el grupo crece y quieres mantener todo centralizado en una sola liga.',
+    perParticipant: 'desde $2.000 COP',
+    idealFor: 'Empresas, comunidades y barrios',
+    marketingLine: 'Mientras más jugadores invitas, menos paga cada uno.'
+  },
+  {
+    tag: 'Plan 31-50',
+    title: 'De 31 a 50 participantes',
+    price: '$80.000 COP',
+    description: 'Pensado para grupos muy activos que quieren mantener una sola competencia bien organizada.',
+    perParticipant: 'desde $1.600 COP',
+    idealFor: 'Comunidades grandes y torneos internos',
+    marketingLine: 'Ticket bajo por persona aun en grupos grandes.'
+  },
+  {
+    tag: 'Plan +50',
+    title: 'Mas de 50 participantes',
+    price: '$100.000 COP',
+    description: 'Diseñado para grupos masivos que quieren una experiencia seria, ordenada y competitiva.',
+    perParticipant: 'hasta $2.000 COP (con 50)',
+    idealFor: 'Torneos grandes y comunidades organizadas',
+    marketingLine: 'Plan para admins que quieren escalar sin perder control.'
+  }
+];
+---
+
+<section class="mt-12 max-w-6xl mx-auto">
+  <div class="text-center mb-8">
+    <h2 class="text-2xl md:text-3xl font-bold text-[color:var(--pc-text-on-dark)] mb-3">
+      Elige el plan ideal para tu grupo y empieza hoy
+    </h2>
+    <p class="text-[color:var(--pc-muted)] max-w-3xl mx-auto">
+      Todos los planes incluyen exactamente las mismas funcionalidades de PollaClub: pronósticos
+      de partidos, bonus, tabla de posiciones en tiempo real y reglas completas de puntuación. Solo
+      cambia la cantidad máxima de participantes por grupo.
+    </p>
+    <p class="mt-4 text-xs text-[color:var(--pc-accent)] font-medium">Precio por grupo. Sin cobros mensuales ni adicionales.</p>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {plans.map((plan) => (
+      <article
+        class={`rounded-2xl p-6 ${
+          plan.highlighted
+            ? 'border-2 border-[color:var(--pc-accent)] bg-[color:var(--pc-surface)]/90 shadow-lg shadow-[color:var(--pc-accent)]/10'
+            : 'border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/80'
+        }`}
+      >
+        <p class="text-xs uppercase tracking-wide text-[color:var(--pc-accent)] font-semibold mb-2">{plan.tag}</p>
+        <h3 class="text-xl font-bold text-[color:var(--pc-text-on-dark)] mb-1">{plan.title}</h3>
+        <p class="text-3xl font-extrabold text-[color:var(--pc-accent)] mb-3">{plan.price}</p>
+        <p class="text-sm text-[color:var(--pc-muted)] mb-3">{plan.description}</p>
+        <div class="text-sm text-[color:var(--pc-muted)] space-y-1">
+          <p><strong class="text-[color:var(--pc-text-on-dark)]">Costo por participante:</strong> {plan.perParticipant}</p>
+          <p><strong class="text-[color:var(--pc-text-on-dark)]">Ideal para:</strong> {plan.idealFor}</p>
+        </div>
+        <p class="mt-4 text-xs text-[color:var(--pc-accent)] font-medium">{plan.marketingLine}</p>
+      </article>
+    ))}
+  </div>
+
+  <div class="flex justify-center">
+    <a
+      href={getWhatsappLink()}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="mt-5 inline-flex w-auto items-center justify-center rounded-md bg-[color:var(--pc-accent)] px-4 py-2 font-semibold text-[color:var(--pc-text-strong)] transition hover:bg-[color:var(--pc-accent-dark)]"
+    >
+    ⚽ Quiero entrar al juego ⚽
+    </a>
+  </div>
+
+  <div class="mt-6 rounded-xl border border-[color:var(--pc-main-dark)]/60 bg-[color:var(--pc-surface)]/70 p-4 text-sm text-[color:var(--pc-muted)]">
+    <p class="font-semibold text-[color:var(--pc-text-on-dark)] mb-2">Como funciona el pago manual</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>Revisas los planes arriba y pulsas el botón para escribirnos por WhatsApp.</li>
+      <li>Te compartimos el valor y los datos de pago por Nequi o llaves Bre-B.</li>
+      <li>Cuando pagues, nos envias comprobante y tu correo de registro en PollaClub.</li>
+      <li>En un tiempo aproximado de 10 minutos, tendras acceso a crear tu grupo y podras empezar a jugar.</li>
+      <li>Si estás en plan gratuito, puedes actualizar a cualquier plan cuando quieras.</li>
+      <li>Tenemos soporte por WhatsApp para cualquier duda o inconveniente durante la activación.</li>
+    </ul>
+  </div>
+</section>

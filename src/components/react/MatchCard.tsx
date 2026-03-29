@@ -41,6 +41,7 @@ export default function MatchCard({
 
   const [isEditing, setIsEditing] = useState(!userPrediction && canEdit);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [formError, setFormError] = useState('');
 
   // Cargar datos de equipos desde Firestore/cache
   useEffect(() => {
@@ -117,11 +118,12 @@ export default function MatchCard({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
     const score1 = parseInt(team1Score, 10);
     const score2 = parseInt(team2Score, 10);
 
     if (isNaN(score1) || isNaN(score2) || score1 < 0 || score2 < 0) {
-      alert('Por favor ingresa marcadores válidos (números enteros >= 0)');
+      setFormError('Ingresa marcadores válidos (números enteros mayores o iguales a 0).');
       return;
     }
 
@@ -331,6 +333,11 @@ export default function MatchCard({
 
       {canEdit && isEditing && (
         <form onSubmit={handleSubmit} className="mt-4 pt-3 border-t border-[color:var(--pc-main-dark)]/60">
+          {formError && (
+            <p className="mb-2 rounded-md border border-red-500/50 bg-red-500/10 p-2 text-xs text-red-100">
+              {formError}
+            </p>
+          )}
           <div className="flex gap-2">
             <button
               type="submit"
