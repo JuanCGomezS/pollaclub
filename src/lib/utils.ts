@@ -68,9 +68,6 @@ export function getRoute(path: string): string {
 const DEFAULT_WHATSAPP_MESSAGE =
   'Hola PollaClub, quiero entrar al juego y comprar mi acceso.';
 
-/**
- * Enlace wa.me con el número público (PUBLIC_WHATSAPP_NUMBER) y texto opcional.
- */
 export function getWhatsappLink(message: string = DEFAULT_WHATSAPP_MESSAGE): string {
   const raw = String(import.meta.env.PUBLIC_WHATSAPP_NUMBER || '');
   const whatsappNumber = raw.replace(/\D/g, '');
