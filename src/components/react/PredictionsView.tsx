@@ -6,6 +6,7 @@ import { getGroup } from '../../lib/groups';
 import { filterFinishedMatches, filterLiveMatches, filterUpcomingMatches } from '../../lib/matches';
 import { getUserPrediction, getUserPredictions, savePrediction } from '../../lib/predictions';
 import type { Group, Match, Prediction } from '../../lib/types';
+import { getWhatsappLink } from '../../lib/utils';
 import BonusPredictionsForm from './BonusPredictionsForm';
 import MatchCard from './MatchCard';
 
@@ -21,6 +22,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(!groupProp);
   const [error, setError] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [userPredictions, setUserPredictions] = useState<Record<string, Prediction>>({});
   const [savingPrediction, setSavingPrediction] = useState<string | null>(null);
 
@@ -97,6 +99,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     if (!user || !group) return;
 
     setSavingPrediction(matchId);
+    setSaveError('');
     try {
       await savePrediction(groupId, user.uid, matchId, team1Score, team2Score);
       
@@ -105,7 +108,7 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
         setUserPredictions((prev) => ({ ...prev, [matchId]: prediction }));
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error al guardar pronóstico');
+      setSaveError(err instanceof Error ? err.message : 'No se pudo guardar el pronóstico');
     } finally {
       setSavingPrediction(null);
     }
@@ -170,8 +173,27 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     { id: 'bonus', label: 'Pronósticos bonus' },
   ];
 
+  const getLockMessage = (match: Match): string | undefined => {
+    const maxMatchNumber = Number(group.maxMatchNumber || 0);
+    if (maxMatchNumber > 0 && match.matchNumber > maxMatchNumber) {
+      return `Tu plan actual permite jugar solo hasta el partido ${maxMatchNumber}. Actualiza tu plan para seguir pronosticando.`;
+    }
+    return undefined;
+  };
+
+  const lockedUpcomingMatches = upcomingMatches.filter((match) => Boolean(getLockMessage(match)));
+  const hasLockedUpcomingMatches = lockedUpcomingMatches.length > 0;
+  const maxMatchNumber = Number(group.maxMatchNumber || 0);
+
   return (
     <div className="space-y-4">
+      {saveError && (
+        <div className="rounded-lg border border-amber-400/50 bg-amber-500/10 p-3 text-sm text-amber-100">
+          <p className="font-semibold">No se pudo guardar el pronóstico</p>
+          <p className="mt-1">{saveError}</p>
+        </div>
+      )}
+
       <nav className="flex flex-wrap gap-1 border-b border-[color:var(--pc-main-dark)]/50 pb-2">
         {subTabs.map(({ id, label, count }) => (
           <button
@@ -219,9 +241,32 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
 
       {subTab === 'upcoming' && (
         <section>
+          {hasLockedUpcomingMatches && (
+            <div className="mb-4 rounded-lg border border-amber-400/50 bg-amber-500/10 p-3 text-sm text-amber-100">
+              <p className="font-semibold">Limite del plan gratuito alcanzado</p>
+              <p className="mt-1">
+                Tu plan actual permite pronosticar hasta el partido {maxMatchNumber}. Para seguir
+                jugando en los próximos partidos, actualiza tu plan.{' '}
+                <a
+                  href={getWhatsappLink(
+                    'Hola PollaClub, quiero actualizar mi plan para seguir pronosticando en mi grupo.'
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-amber-200 underline decoration-amber-400/80 underline-offset-2 hover:text-white"
+                >
+                  Actualizar ahora
+                </a>
+              </p>
+            </div>
+          )}
+
           {upcomingMatches.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {upcomingMatches.map((match) => (
+                (() => {
+                  const lockMessage = getLockMessage(match);
+                  return (
                 <MatchCard
                   key={match.id}
                   match={match}
@@ -230,8 +275,10 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
                   userPrediction={userPredictions[match.id]}
                   onSavePrediction={handleSavePrediction}
                   isSaving={savingPrediction === match.id}
-                  canEdit={true}
+                  canEdit={!lockMessage}
                 />
+                  );
+                })()
               ))}
             </div>
           ) : (

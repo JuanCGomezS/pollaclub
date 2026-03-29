@@ -116,7 +116,7 @@ export default function Header() {
               href={getRoute('/login')}
               className="min-h-[44px] inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-[color:var(--pc-text-strong)] bg-[color:var(--pc-accent)] hover:bg-[color:var(--pc-accent-dark)] transition shadow-md"
             >
-              Iniciar Sesión
+              Iniciar Sesión / Registrarse
             </a>
           </div>
         </div>

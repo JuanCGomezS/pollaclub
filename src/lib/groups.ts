@@ -107,6 +107,7 @@ export async function createGroup(
     const userData = userDoc.data();
     const canCreateGroups = userData.canCreateGroups === true;
     const purchasedMaxParticipants = Number(userData.purchasedMaxParticipants || 0);
+    const purchasedMaxMatchNumber = Number(userData.purchasedMaxMatchNumber || 0);
     const slots = Number(userData.groupCreationSlots || 0);
 
     if (!canCreateGroups) {
@@ -140,6 +141,7 @@ export async function createGroup(
       planCode: userData.purchasedPlanCode || 'manual',
       planName: userData.purchasedPlanName || 'Plan Manual',
       maxParticipants: purchasedMaxParticipants,
+      ...(purchasedMaxMatchNumber > 0 && { maxMatchNumber: purchasedMaxMatchNumber }),
       isActive: true,
       settings,
       createdAt: now,

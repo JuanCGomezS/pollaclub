@@ -1,6 +1,5 @@
 ---
-const whatsappRaw = String(import.meta.env.PUBLIC_WHATSAPP_NUMBER || '');
-const whatsappNumber = whatsappRaw.replace(/\D/g, '');
+import { getWhatsappLink } from '../lib/utils';
 
 type PlanCard = {
   tag: string;
@@ -18,10 +17,10 @@ const plans: PlanCard[] = [
     tag: 'Plan de entrada',
     title: 'Prueba gratis 3 partidos',
     price: '$0 COP',
-    description: 'Acceso completo durante los 3 primeros partidos del torneo.',
+    description: 'Acceso completo durante los 3 primeros partidos del torneo (máximo 5 participantes).',
     perParticipant: 'Gratis',
     idealFor: 'Probar la experiencia real antes de pagar',
-    marketingLine: 'Sin tarjeta al inicio. Activa un plan pago solo si te convence.'
+    marketingLine: 'Luego puedes actualizar a cualquier plan pago sin perder el progreso del grupo.'
   },
   {
     tag: 'Plan 1-5',
@@ -70,12 +69,6 @@ const plans: PlanCard[] = [
     marketingLine: 'Plan para admins que quieren escalar sin perder control.'
   }
 ];
-
-function getWhatsappLink(): string {
-  const text = 'Hola PollaClub, quiero entrar al juego y comprar mi acceso.';
-  if (!whatsappNumber) return `https://wa.me/?text=${encodeURIComponent(text)}`;
-  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
-}
 ---
 
 <section class="mt-12 max-w-6xl mx-auto">
@@ -131,6 +124,8 @@ function getWhatsappLink(): string {
       <li>Te compartimos el valor y los datos de pago por Nequi o llaves Bre-B.</li>
       <li>Cuando pagues, nos envias comprobante y tu correo de registro en PollaClub.</li>
       <li>En un tiempo aproximado de 10 minutos, tendras acceso a crear tu grupo y podras empezar a jugar.</li>
+      <li>Si estás en plan gratuito, puedes actualizar a cualquier plan cuando quieras.</li>
+      <li>Tenemos soporte por WhatsApp para cualquier duda o inconveniente durante la activación.</li>
     </ul>
   </div>
 </section>

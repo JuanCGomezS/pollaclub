@@ -18,7 +18,8 @@ function getArgValue(flag: string): string | undefined {
 function printUsageAndExit(): never {
   console.log(`
 Usage:
-  npm run activate:user-plan -- --email <email> --plan-code <code> --plan-name <name> --max-participants <n> [--slots <n>] [--disable-create]
+  npm run activate:user-plan -- --email <email> --plan-code <code> --plan-name <name> --max-participants <n> [--slots <n>] [--max-match-number <n>] [--clear-max-match-number] [--disable-create]
+  npm run activate:user-plan -- --email <email> --free-trial [--slots <n>] [--skip-group-sync]
 
 Required:
   --email               User email in Firebase Auth / users collection
@@ -28,26 +29,47 @@ Required:
 
 Optional:
   --slots               Number of groups user can create with this activation (default: 1)
+  --max-match-number    Max matchNumber enabled for predictions (example: 3 for free trial)
+  --clear-max-match-number
+                        Removes purchasedMaxMatchNumber (useful when upgrading from free trial to paid)
+  --free-trial          Shortcut for plan gratuito: free_3_matches, maxParticipants=5, maxMatchNumber=3
   --disable-create      If present, keeps canCreateGroups=false even if slots > 0
+  --skip-group-sync     If present, only updates users/{uid} (does not update groups where adminUid == uid)
 
 Example:
   npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 1
+  npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_5 --plan-name "Plan 1-5" --max-participants 5 --slots 1 --clear-max-match-number
+  npm run activate:user-plan -- --email user@mail.com --free-trial --slots 1
 `);
   process.exit(1);
 }
 
 const email = getArgValue('--email');
-const planCode = getArgValue('--plan-code');
-const planName = getArgValue('--plan-name');
-const maxParticipantsRaw = getArgValue('--max-participants');
+const freeTrial = process.argv.includes('--free-trial');
+const explicitPlanCode = getArgValue('--plan-code');
+const explicitPlanName = getArgValue('--plan-name');
+const explicitMaxParticipantsRaw = getArgValue('--max-participants');
+const explicitMaxMatchNumberRaw = getArgValue('--max-match-number');
+const clearMaxMatchNumber = process.argv.includes('--clear-max-match-number');
 const slotsRaw = getArgValue('--slots');
 const disableCreate = process.argv.includes('--disable-create');
+const skipGroupSync = process.argv.includes('--skip-group-sync');
 
-if (!email || !planCode || !planName || !maxParticipantsRaw) {
+if (!email) {
+  printUsageAndExit();
+}
+
+const planCode = freeTrial ? 'free_3_matches' : explicitPlanCode;
+const planName = freeTrial ? 'Prueba gratis 3 partidos' : explicitPlanName;
+const maxParticipantsRaw = freeTrial ? '5' : explicitMaxParticipantsRaw;
+const maxMatchNumberRaw = freeTrial ? '3' : explicitMaxMatchNumberRaw;
+
+if (!planCode || !planName || !maxParticipantsRaw) {
   printUsageAndExit();
 }
 
 const maxParticipants = Number(maxParticipantsRaw);
+const maxMatchNumber = Number(maxMatchNumberRaw || '0');
 const slots = Number(slotsRaw ?? '1');
 
 if (!Number.isFinite(maxParticipants) || maxParticipants < 1) {
@@ -57,6 +79,16 @@ if (!Number.isFinite(maxParticipants) || maxParticipants < 1) {
 
 if (!Number.isFinite(slots) || slots < 0) {
   console.error('Error: --slots must be a number >= 0');
+  process.exit(1);
+}
+
+if (!Number.isFinite(maxMatchNumber) || maxMatchNumber < 0) {
+  console.error('Error: --max-match-number must be a number >= 0');
+  process.exit(1);
+}
+
+if (clearMaxMatchNumber && maxMatchNumber > 0) {
+  console.error('Error: use either --max-match-number or --clear-max-match-number, not both');
   process.exit(1);
 }
 
@@ -123,7 +155,7 @@ async function run() {
     const now = admin.firestore.FieldValue.serverTimestamp();
 
     if (!userDoc.exists) {
-      await userRef.set({
+      const createPayload: Record<string, unknown> = {
         uid,
         displayName: authUser.displayName || `Usuario ${uid.slice(0, 8)}`,
         email: authUser.email || email,
@@ -134,17 +166,63 @@ async function run() {
         purchasedMaxParticipants: maxParticipants,
         groupCreationSlots: slots,
         createdAt: now
+      };
+
+      if (maxMatchNumber > 0) {
+        createPayload.purchasedMaxMatchNumber = maxMatchNumber;
+      }
+
+      await userRef.set({
+        ...createPayload
       });
       console.log(`Created users/${uid} and activated plan`);
     } else {
-      await userRef.update({
+      const updatePayload: Record<string, unknown> = {
         canCreateGroups,
         purchasedPlanCode: planCode,
         purchasedPlanName: planName,
         purchasedMaxParticipants: maxParticipants,
         groupCreationSlots: slots
+      };
+
+      if (maxMatchNumber > 0) {
+        updatePayload.purchasedMaxMatchNumber = maxMatchNumber;
+      } else if (clearMaxMatchNumber) {
+        updatePayload.purchasedMaxMatchNumber = admin.firestore.FieldValue.delete();
+      }
+
+      await userRef.update({
+        ...updatePayload
       });
       console.log(`Updated users/${uid} with activated plan`);
+    }
+
+    let syncedGroups = 0;
+    if (!skipGroupSync) {
+      const groupsSnapshot = await db
+        .collection('groups')
+        .where('adminUid', '==', uid)
+        .get();
+
+      const updates = groupsSnapshot.docs.map(async (groupDoc) => {
+        const groupUpdate: Record<string, unknown> = {
+          planCode,
+          planName,
+          maxParticipants,
+          updatedAt: now
+        };
+
+        if (maxMatchNumber > 0) {
+          groupUpdate.maxMatchNumber = maxMatchNumber;
+        } else if (clearMaxMatchNumber) {
+          groupUpdate.maxMatchNumber = admin.firestore.FieldValue.delete();
+        }
+
+        await groupDoc.ref.update(groupUpdate);
+      });
+
+      await Promise.all(updates);
+      syncedGroups = groupsSnapshot.size;
     }
 
     console.log('--- Activation summary ---');
@@ -153,8 +231,15 @@ async function run() {
     console.log(`planCode: ${planCode}`);
     console.log(`planName: ${planName}`);
     console.log(`maxParticipants: ${maxParticipants}`);
+    console.log(`maxMatchNumber: ${maxMatchNumber > 0 ? maxMatchNumber : 'no limit'}`);
+    if (clearMaxMatchNumber) {
+      console.log('purchasedMaxMatchNumber: cleared');
+    }
     console.log(`groupCreationSlots: ${slots}`);
     console.log(`canCreateGroups: ${canCreateGroups}`);
+    console.log(
+      `groupsSyncedByAdminUid: ${skipGroupSync ? 'skipped' : syncedGroups}`
+    );
     process.exit(0);
   } catch (error: any) {
     console.error('Failed to activate user plan:', error?.message || error);
