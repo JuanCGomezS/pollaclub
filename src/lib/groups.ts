@@ -94,7 +94,8 @@ export async function createGroup(
   competitionId: string,
   name: string,
   adminUid: string,
-  settings: Group['settings']
+  settings: Group['settings'],
+  logoUrl: string
 ): Promise<{ groupId: string; code: string }> {
   try {
     const userRef = doc(db, 'users', adminUid);
@@ -143,6 +144,7 @@ export async function createGroup(
       maxParticipants: purchasedMaxParticipants,
       ...(purchasedMaxMatchNumber > 0 && { maxMatchNumber: purchasedMaxMatchNumber }),
       isActive: true,
+      logoUrl,
       settings,
       createdAt: now,
       updatedAt: now

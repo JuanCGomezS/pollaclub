@@ -13,6 +13,7 @@ export interface Competition {
   startDate: Timestamp;
   endDate: Timestamp;
   status: CompetitionStatus;
+  logoUrl: string;
   bonusSettings: {
     hasWinner: boolean;
     hasRunnerUp: boolean;
@@ -90,6 +91,7 @@ export interface Group {
   maxParticipants?: number;
   maxMatchNumber?: number;
   isActive: boolean;
+  logoUrl: string;
   settings: {
     pointsExactScore: number;
     pointsWinner: number;

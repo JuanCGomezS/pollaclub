@@ -34,12 +34,20 @@ Optional:
                         Removes purchasedMaxMatchNumber (useful when upgrading from free trial to paid)
   --free-trial          Shortcut for plan gratuito: free_3_matches, maxParticipants=5, maxMatchNumber=3
   --disable-create      If present, keeps canCreateGroups=false even if slots > 0
-  --skip-group-sync     If present, only updates users/{uid} (does not update groups where adminUid == uid)
+  --skip-group-sync     If present, only updates users/{uid} (does not update any group document)
+  --group-id <id>       If present, only updates groups/<id> (must exist and adminUid must match). Mutually exclusive with --skip-group-sync.
 
 Example:
   npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 1
   npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_5 --plan-name "Plan 1-5" --max-participants 5 --slots 1 --clear-max-match-number
-  npm run activate:user-plan -- --email user@mail.com --free-trial --slots 1
+  npm run activate:user-plan -- --email user@mail.com --free-trial --slots 1 --group-id abc123
+
+  Creación
+- npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --free-trial --slots 1
+- npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 1 --clear-max-match-number
+Actualización
+- npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --free-trial --slots 0 --group-id eXlet9tP9I4UVXYvEZtl
+- npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 0 --group-id xyz789 --clear-max-match-number
 `);
   process.exit(1);
 }
@@ -54,9 +62,19 @@ const clearMaxMatchNumber = process.argv.includes('--clear-max-match-number');
 const slotsRaw = getArgValue('--slots');
 const disableCreate = process.argv.includes('--disable-create');
 const skipGroupSync = process.argv.includes('--skip-group-sync');
+const groupId = getArgValue('--group-id')?.trim();
 
 if (!email) {
   printUsageAndExit();
+}
+
+const userEmail = email;
+
+if (skipGroupSync && groupId) {
+  console.error(
+    'Error: use either --skip-group-sync or --group-id, not both (--skip-group-sync skips all groups; --group-id targets one group)'
+  );
+  process.exit(1);
 }
 
 const planCode = freeTrial ? 'free_3_matches' : explicitPlanCode;
@@ -146,7 +164,7 @@ async function run() {
   const auth = admin.auth();
 
   try {
-    const authUser = await auth.getUserByEmail(email);
+    const authUser = await auth.getUserByEmail(userEmail);
     const uid = authUser.uid;
     const userRef = db.collection('users').doc(uid);
     const userDoc = await userRef.get();
@@ -158,7 +176,7 @@ async function run() {
       const createPayload: Record<string, unknown> = {
         uid,
         displayName: authUser.displayName || `Usuario ${uid.slice(0, 8)}`,
-        email: authUser.email || email,
+        email: authUser.email || userEmail,
         groups: [],
         canCreateGroups,
         purchasedPlanCode: planCode,
@@ -197,36 +215,61 @@ async function run() {
       console.log(`Updated users/${uid} with activated plan`);
     }
 
+    const groupUpdatePayload = (): Record<string, unknown> => {
+      const groupUpdate: Record<string, unknown> = {
+        planCode,
+        planName,
+        maxParticipants,
+        updatedAt: now
+      };
+
+      if (maxMatchNumber > 0) {
+        groupUpdate.maxMatchNumber = maxMatchNumber;
+      } else if (clearMaxMatchNumber) {
+        groupUpdate.maxMatchNumber = admin.firestore.FieldValue.delete();
+      }
+
+      return groupUpdate;
+    };
+
     let syncedGroups = 0;
     if (!skipGroupSync) {
-      const groupsSnapshot = await db
-        .collection('groups')
-        .where('adminUid', '==', uid)
-        .get();
+      if (groupId) {
+        const groupRef = db.collection('groups').doc(groupId);
+        const groupSnap = await groupRef.get();
 
-      const updates = groupsSnapshot.docs.map(async (groupDoc) => {
-        const groupUpdate: Record<string, unknown> = {
-          planCode,
-          planName,
-          maxParticipants,
-          updatedAt: now
-        };
-
-        if (maxMatchNumber > 0) {
-          groupUpdate.maxMatchNumber = maxMatchNumber;
-        } else if (clearMaxMatchNumber) {
-          groupUpdate.maxMatchNumber = admin.firestore.FieldValue.delete();
+        if (!groupSnap.exists) {
+          console.error(`Error: groups/${groupId} does not exist`);
+          process.exit(1);
         }
 
-        await groupDoc.ref.update(groupUpdate);
-      });
+        const adminUid = groupSnap.get('adminUid');
+        if (adminUid !== uid) {
+          console.error(
+            `Error: groups/${groupId} adminUid does not match this user (expected ${uid}, got ${String(adminUid)})`
+          );
+          process.exit(1);
+        }
 
-      await Promise.all(updates);
-      syncedGroups = groupsSnapshot.size;
+        await groupRef.update(groupUpdatePayload());
+        syncedGroups = 1;
+      } else {
+        const groupsSnapshot = await db
+          .collection('groups')
+          .where('adminUid', '==', uid)
+          .get();
+
+        const updates = groupsSnapshot.docs.map(async (groupDoc) => {
+          await groupDoc.ref.update(groupUpdatePayload());
+        });
+
+        await Promise.all(updates);
+        syncedGroups = groupsSnapshot.size;
+      }
     }
 
     console.log('--- Activation summary ---');
-    console.log(`email: ${email}`);
+    console.log(`email: ${userEmail}`);
     console.log(`uid: ${uid}`);
     console.log(`planCode: ${planCode}`);
     console.log(`planName: ${planName}`);
@@ -237,8 +280,11 @@ async function run() {
     }
     console.log(`groupCreationSlots: ${slots}`);
     console.log(`canCreateGroups: ${canCreateGroups}`);
+    if (groupId && !skipGroupSync) {
+      console.log(`groupId (targeted sync): ${groupId}`);
+    }
     console.log(
-      `groupsSyncedByAdminUid: ${skipGroupSync ? 'skipped' : syncedGroups}`
+      `groupsSynced: ${skipGroupSync ? 'skipped' : syncedGroups}${groupId && !skipGroupSync ? ' (single group)' : skipGroupSync ? '' : ' (all where adminUid matches)'}`
     );
     process.exit(0);
   } catch (error: any) {
