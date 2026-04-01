@@ -97,6 +97,11 @@ export default function CreateGroupForm() {
       if (pointsExactScore < 1) throw new Error('Los puntos por marcador exacto deben ser al menos 1');
       if (pointsWinner < 1) throw new Error('Los puntos por acertar ganador deben ser al menos 1');
 
+      const selectedCompetition = competitions.find((c) => c.id === formData.competitionId);
+      if (!selectedCompetition) {
+        throw new Error('Selecciona una competición válida');
+      }
+
       const settings: Group['settings'] = {
         pointsExactScore,
         pointsWinner,
@@ -112,7 +117,8 @@ export default function CreateGroupForm() {
         formData.competitionId,
         formData.name,
         user.uid,
-        settings
+        settings,
+        selectedCompetition.logoUrl
       );
 
       // Redirigir al grupo creado
