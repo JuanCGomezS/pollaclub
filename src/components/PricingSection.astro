@@ -5,6 +5,7 @@ type PlanCard = {
   tag: string;
   title: string;
   price: string;
+  priceBeforeLaunch?: string;
   description: string;
   perParticipant: string;
   idealFor: string;
@@ -26,6 +27,7 @@ const plans: PlanCard[] = [
     tag: 'Plan 1-5',
     title: 'Hasta 5 participantes',
     price: '$20.000 COP',
+    priceBeforeLaunch: '$30.000 COP',
     description: 'Para grupos pequeños que quieren jugar todo el torneo sin complicaciones.',
     perParticipant: 'desde $4.000 COP',
     idealFor: 'Familia o amigos cercanos',
@@ -35,6 +37,7 @@ const plans: PlanCard[] = [
     tag: 'PLAN 1-15 (Mas elegido)',
     title: 'Hasta 15 participantes',
     price: '$40.000 COP',
+    priceBeforeLaunch: '$50.000 COP',
     description: 'El equilibrio ideal entre precio total y costo por persona para la mayoría de grupos.',
     perParticipant: 'desde $2.667 COP',
     idealFor: 'Oficinas, universidades y parches grandes',
@@ -45,6 +48,7 @@ const plans: PlanCard[] = [
     tag: 'Plan 1-30',
     title: 'Hasta 30 participantes',
     price: '$60.000 COP',
+    priceBeforeLaunch: '$70.000 COP',
     description: 'Perfecto cuando el grupo crece y quieres mantener todo centralizado en una sola liga.',
     perParticipant: 'desde $2.000 COP',
     idealFor: 'Empresas, comunidades y barrios',
@@ -54,6 +58,7 @@ const plans: PlanCard[] = [
     tag: 'Plan 31-50',
     title: 'De 31 a 50 participantes',
     price: '$80.000 COP',
+    priceBeforeLaunch: '$90.000 COP',
     description: 'Pensado para grupos muy activos que quieren mantener una sola competencia bien organizada.',
     perParticipant: 'desde $1.600 COP',
     idealFor: 'Comunidades grandes y torneos internos',
@@ -63,12 +68,15 @@ const plans: PlanCard[] = [
     tag: 'Plan +50',
     title: 'Mas de 50 participantes',
     price: '$100.000 COP',
+    priceBeforeLaunch: '$110.000 COP',
     description: 'Diseñado para grupos masivos que quieren una experiencia seria, ordenada y competitiva.',
     perParticipant: 'hasta $2.000 COP (con 50)',
     idealFor: 'Torneos grandes y comunidades organizadas',
     marketingLine: 'Plan para admins que quieren escalar sin perder control.'
   }
 ];
+
+const LAUNCH_END_ISO = '2026-05-01T23:59:59-05:00';
 ---
 
 <section class="mt-12 max-w-6xl mx-auto">
@@ -84,6 +92,80 @@ const plans: PlanCard[] = [
     <p class="mt-4 text-xs text-[color:var(--pc-accent)] font-medium">Precio por grupo. Sin cobros mensuales ni adicionales.</p>
   </div>
 
+  <div
+    class="launch-banner relative mb-8 overflow-hidden rounded-2xl border border-[color:var(--pc-accent)]/25 bg-[#0d1628] p-6 md:p-8 shadow-lg shadow-black/20"
+  >
+    <div
+      class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full border border-[color:var(--pc-accent)]/10 opacity-40"
+      aria-hidden="true"
+    />
+    <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <div class="max-w-xl">
+        <p
+          class="mb-3 inline-block rounded-md bg-[color:var(--pc-accent)] px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-[color:var(--pc-text-strong)]"
+        >
+          Descuento de lanzamiento
+        </p>
+        <h3 class="text-2xl font-bold leading-tight text-[color:var(--pc-text-on-dark)] md:text-3xl">
+          Entra con <span class="text-[color:var(--pc-accent)]">precio de lanzamiento</span> antes de que termine la oferta.
+        </h3>
+        <p class="mt-3 text-sm text-[color:var(--pc-muted)] md:text-base">
+          Ahorra <strong class="text-[color:var(--pc-text-on-dark)]">$10.000 COP</strong> en cada plan de pago. La promoción termina el
+          <strong class="text-[color:var(--pc-accent)]">1 de mayo de 2026</strong>.
+        </p>
+      </div>
+
+      <div class="relative flex shrink-0 justify-center lg:justify-end">
+        <svg
+          class="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 text-[color:var(--pc-accent)] opacity-[0.07]"
+          viewBox="0 0 100 100"
+          aria-hidden="true"
+        >
+          <polygon
+            points="50,5 61,38 97,38 68,59 79,95 50,73 21,95 32,59 3,38 39,38"
+            fill="currentColor"
+          />
+        </svg>
+        <div
+          id="launch-countdown"
+          class="relative z-10 flex gap-4 sm:gap-6 md:gap-8"
+          data-deadline={LAUNCH_END_ISO}
+        >
+          <div class="flex flex-col items-center">
+            <span
+              data-unit="days"
+              class="tabular-nums text-4xl font-extrabold text-[color:var(--pc-accent)] sm:text-5xl md:text-6xl"
+              >--</span
+            >
+            <span class="mt-1 text-[0.65rem] font-semibold uppercase tracking-widest text-[color:var(--pc-muted)]"
+              >Días</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <span
+              data-unit="hours"
+              class="tabular-nums text-4xl font-extrabold text-[color:var(--pc-accent)] sm:text-5xl md:text-6xl"
+              >--</span
+            >
+            <span class="mt-1 text-[0.65rem] font-semibold uppercase tracking-widest text-[color:var(--pc-muted)]"
+              >Horas</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <span
+              data-unit="minutes"
+              class="tabular-nums text-4xl font-extrabold text-[color:var(--pc-accent)] sm:text-5xl md:text-6xl"
+              >--</span
+            >
+            <span class="mt-1 text-[0.65rem] font-semibold uppercase tracking-widest text-[color:var(--pc-muted)]"
+              >Minutos</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
     {plans.map((plan) => (
       <article
@@ -95,7 +177,18 @@ const plans: PlanCard[] = [
       >
         <p class="text-xs uppercase tracking-wide text-[color:var(--pc-accent)] font-semibold mb-2">{plan.tag}</p>
         <h3 class="text-xl font-bold text-[color:var(--pc-text-on-dark)] mb-1">{plan.title}</h3>
-        <p class="text-3xl font-extrabold text-[color:var(--pc-accent)] mb-3">{plan.price}</p>
+        <div class="mb-3">
+          {plan.priceBeforeLaunch ? (
+            <>
+              <p class="text-sm text-[color:var(--pc-muted)] line-through decoration-[color:var(--pc-muted)]/80">
+                {plan.priceBeforeLaunch}
+              </p>
+              <p class="text-3xl font-extrabold text-[color:var(--pc-accent)]">{plan.price}</p>
+            </>
+          ) : (
+            <p class="text-3xl font-extrabold text-[color:var(--pc-accent)]">{plan.price}</p>
+          )}
+        </div>
         <p class="text-sm text-[color:var(--pc-muted)] mb-3">{plan.description}</p>
         <div class="text-sm text-[color:var(--pc-muted)] space-y-1">
           <p><strong class="text-[color:var(--pc-text-on-dark)]">Costo por participante:</strong> {plan.perParticipant}</p>
@@ -129,3 +222,36 @@ const plans: PlanCard[] = [
     </ul>
   </div>
 </section>
+
+<script is:inline>
+  (function () {
+    var root = document.getElementById('launch-countdown');
+    if (!root) return;
+    var deadline = root.getAttribute('data-deadline');
+    if (!deadline) return;
+
+    function pad(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    function tick() {
+      var end = new Date(deadline).getTime();
+      var now = Date.now();
+      var ms = Math.max(0, end - now);
+      var totalSec = Math.floor(ms / 1000);
+      var days = Math.floor(totalSec / 86400);
+      var hours = Math.floor((totalSec % 86400) / 3600);
+      var minutes = Math.floor((totalSec % 3600) / 60);
+
+      var dEl = root.querySelector('[data-unit="days"]');
+      var hEl = root.querySelector('[data-unit="hours"]');
+      var mEl = root.querySelector('[data-unit="minutes"]');
+      if (dEl) dEl.textContent = String(days);
+      if (hEl) hEl.textContent = pad(hours);
+      if (mEl) mEl.textContent = pad(minutes);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>

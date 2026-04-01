@@ -66,18 +66,25 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="relative aspect-[2/1] w-full min-h-[200px] max-h-[min(70vh,720px)] bg-black sm:min-h-[240px]">
-          {slides.map((slide, i) => (
+        <div className="relative w-full bg-black md:aspect-[2/1] md:min-h-[240px] md:max-h-[min(70vh,720px)]">
+          {slides.map((slide, i) => {
+            const isActive = i === safeIndex;
+            return (
             <div
               key={`${slide.src}-${i}`}
-              className={`absolute inset-0 bg-black transition-opacity duration-700 ease-out ${i === safeIndex ? 'z-[1] opacity-100' : 'z-0 opacity-0 pointer-events-none'
-                }`}
-              aria-hidden={i !== safeIndex}
+              className={`bg-black transition-opacity duration-700 ease-out ${
+                isActive ? 'z-[1] opacity-100' : 'z-0 opacity-0 pointer-events-none'
+              } ${isActive ? 'max-md:relative max-md:w-full' : 'max-md:absolute max-md:inset-0'} md:absolute md:inset-0`}
+              aria-hidden={!isActive}
             >
               <img
                 src={resolveUrl(slide.src)}
                 alt={slide.alt}
-                className="h-full w-full object-cover object-center"
+                className={
+                  isActive
+                    ? 'block h-auto w-full md:h-full md:object-cover'
+                    : 'block h-full w-full object-cover'
+                }
                 loading={i === 0 ? 'eager' : 'lazy'}
                 decoding="async"
                 draggable={false}
@@ -87,7 +94,8 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
                 aria-hidden
               />
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {count > 1 && (
@@ -95,22 +103,18 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
             <button
               type="button"
               onClick={goPrev}
-              className="absolute left-2 top-1/2 z-[2] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 md:left-4 md:h-12 md:w-12"
+              className="absolute left-1 top-1/2 z-[2] flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-md px-1 text-3xl font-light leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--pc-accent)] md:left-3 md:text-4xl"
               aria-label="Anterior"
             >
-              <span className="text-lg md:text-xl" aria-hidden>
-                ‹
-              </span>
+              <span aria-hidden>‹</span>
             </button>
             <button
               type="button"
               onClick={goNext}
-              className="absolute right-2 top-1/2 z-[2] flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 md:right-4 md:h-12 md:w-12"
+              className="absolute right-1 top-1/2 z-[2] flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-md px-1 text-3xl font-light leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--pc-accent)] md:right-3 md:text-4xl"
               aria-label="Siguiente"
             >
-              <span className="text-lg md:text-xl" aria-hidden>
-                ›
-              </span>
+              <span aria-hidden>›</span>
             </button>
 
             <div className="absolute bottom-3 left-0 right-0 z-[2] flex justify-center gap-2">
