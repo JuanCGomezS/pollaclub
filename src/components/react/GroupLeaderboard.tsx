@@ -35,6 +35,8 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
   const [selectedEntry, setSelectedEntry] = useState<GroupLeaderboardEntry | null>(null);
   const predictionsByUserRef = useRef<Map<string, Prediction[]>>(new Map());
   const bonusByUserRef = useRef<Map<string, BonusPrediction>>(new Map());
+  const usersMapRef = useRef<Map<string, UserType>>(new Map());
+  const buildEntriesRef = useRef<(() => void) | null>(null);
 
   const allUserIds = useMemo(
     () => [...new Set([...group.participants, group.adminUid])],
@@ -48,6 +50,13 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     });
     return () => { cancelled = true; };
   }, [groupId, allUserIds.join(',')]);
+
+  useEffect(() => {
+    usersMapRef.current = usersMap;
+    if (buildEntriesRef.current) {
+      buildEntriesRef.current();
+    }
+  }, [usersMap]);
 
   useEffect(() => {
     const matchesRef = collection(db, 'competitions', group.competitionId, 'matches');
@@ -102,7 +111,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
       const predictionsByUser = predictionsByUserRef.current;
       const bonusByUser = bonusByUserRef.current;
       const entries: GroupLeaderboardEntry[] = allUserIds.map((userId) => {
-        const user = usersMap.get(userId);
+        const user = usersMapRef.current.get(userId);
         const userName = user?.displayName ?? `Usuario ${userId.substring(0, 8)}...`;
         const userPredictions = predictionsByUser.get(userId) ?? [];
         const matchPoints = calculateUserTotalPoints(userPredictions);
@@ -126,6 +135,7 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
       setLeaderboard(entries);
       setLoading(false);
     }
+    buildEntriesRef.current = buildEntries;
 
     const predictionsRef = collection(db, 'groups', groupId, 'predictions');
     const unsubPredictions = onSnapshot(
@@ -175,10 +185,11 @@ export default function GroupLeaderboard({ groupId, group }: GroupLeaderboardPro
     );
 
     return () => {
+      buildEntriesRef.current = null;
       unsubPredictions();
       unsubBonus();
     };
-  }, [groupId, allUserIds, group.settings, finishedMatches, usersMap]);
+  }, [groupId, allUserIds, group.settings, finishedMatches]);
 
   if (loading) {
     return (
