@@ -51,7 +51,10 @@ export default function HowItWorks() {
   const currentPhase = phases.find((p) => p.id === activePhase) ?? phases[0];
 
   return (
-    <section className="mt-10 max-w-5xl mx-auto text-left">
+    <section
+      id="como-funciona"
+      className="mt-10 max-w-5xl mx-auto scroll-mt-[calc(var(--pc-header-height)+0.75rem)] text-left"
+    >
       <div className="mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-[color:var(--pc-text-on-dark)] mb-3 text-center">
           ¿Cómo funciona PollaClub?
