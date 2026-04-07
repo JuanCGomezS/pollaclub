@@ -10,7 +10,12 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Match, Prediction } from './types';
+import {
+  computeFreeMatchIds,
+  getFreeSlotCount,
+  isFreeSlotPlan
+} from './planLimits';
+import type { Group, Match, Prediction } from './types';
 
 /**
  * Obtiene el pronóstico de un usuario para un partido específico
@@ -60,7 +65,7 @@ export async function savePrediction(
       throw new Error('Grupo no encontrado');
     }
     
-    const group = groupDoc.data() as any;
+    const group = groupDoc.data() as Group;
     const competitionId = group.competitionId;
     
     // Verificar que el partido esté en estado "scheduled"
@@ -77,12 +82,39 @@ export async function savePrediction(
       throw new Error('No se puede hacer pronóstico: el partido ya inició o finalizó');
     }
 
-    // Validación preventiva para planes con límite por número de partido (ej: free trial)
-    const maxMatchNumber = Number(group.maxMatchNumber || 0);
-    if (maxMatchNumber > 0 && match.matchNumber > maxMatchNumber) {
-      throw new Error(
-        `Tu plan actual permite pronosticar hasta el partido ${maxMatchNumber}. Actualiza tu plan para continuar.`
-      );
+    if (isFreeSlotPlan(group)) {
+      const slots = getFreeSlotCount(group);
+      let allowedIds = group.freeMatchIds;
+      if (!allowedIds?.length) {
+        const matchesRef = collection(db, 'competitions', competitionId, 'matches');
+        const matchesSnap = await getDocs(matchesRef);
+        const competitionMatches: Match[] = [];
+        matchesSnap.forEach((d) => {
+          competitionMatches.push({ id: d.id, ...d.data() } as Match);
+        });
+        allowedIds = computeFreeMatchIds(competitionMatches, slots);
+        if (!allowedIds.length) {
+          throw new Error(
+            'No hay partidos programados para fijar la prueba gratuita. Intenta más tarde o contacta al administrador.'
+          );
+        }
+        await updateDoc(groupRef, {
+          freeMatchIds: allowedIds,
+          updatedAt: serverTimestamp()
+        });
+      }
+      if (!allowedIds.includes(matchId)) {
+        throw new Error(
+          'La prueba gratuita solo incluye los partidos fijados para este grupo (no se amplía cuando terminan). Actualiza tu plan para continuar.'
+        );
+      }
+    } else {
+      const cap = Number(group.maxMatchNumber || 0);
+      if (cap > 0 && match.matchNumber > cap) {
+        throw new Error(
+          `Tu plan actual permite pronosticar hasta el partido ${cap}. Actualiza tu plan para continuar.`
+        );
+      }
     }
     
     // Verificar si ya existe un pronóstico

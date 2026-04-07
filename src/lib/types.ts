@@ -90,6 +90,7 @@ export interface Group {
   planName?: string;
   maxParticipants?: number;
   maxMatchNumber?: number;
+  freeMatchIds?: string[];
   isActive: boolean;
   logoUrl: string;
   settings: {

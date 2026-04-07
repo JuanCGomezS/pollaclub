@@ -13,6 +13,8 @@ import {
 } from 'firebase/firestore';
 import { getCurrentUser } from './auth';
 import { db } from './firebase';
+import { getMatchesByCompetition } from './matches';
+import { computeFreeMatchIds, FREE_PLAN_CODE, getFreeSlotCount } from './planLimits';
 import type { Group } from './types';
 
 /**
@@ -109,6 +111,7 @@ export async function createGroup(
     const canCreateGroups = userData.canCreateGroups === true;
     const purchasedMaxParticipants = Number(userData.purchasedMaxParticipants || 0);
     const purchasedMaxMatchNumber = Number(userData.purchasedMaxMatchNumber || 0);
+    const purchasedPlanCode = String(userData.purchasedPlanCode || '');
     const slots = Number(userData.groupCreationSlots || 0);
 
     if (!canCreateGroups) {
@@ -131,8 +134,8 @@ export async function createGroup(
     const groupId = groupRef.id;
     
     const now = Timestamp.now();
-    
-    await setDoc(groupRef, {
+
+    const groupPayload: Record<string, unknown> = {
       id: groupId,
       competitionId,
       name,
@@ -142,13 +145,30 @@ export async function createGroup(
       planCode: userData.purchasedPlanCode || 'manual',
       planName: userData.purchasedPlanName || 'Plan Manual',
       maxParticipants: purchasedMaxParticipants,
-      ...(purchasedMaxMatchNumber > 0 && { maxMatchNumber: purchasedMaxMatchNumber }),
       isActive: true,
       logoUrl,
       settings,
       createdAt: now,
       updatedAt: now
-    });
+    };
+
+    if (purchasedMaxMatchNumber > 0) {
+      groupPayload.maxMatchNumber = purchasedMaxMatchNumber;
+    }
+
+    if (purchasedPlanCode === FREE_PLAN_CODE && purchasedMaxMatchNumber > 0) {
+      const slotCount = getFreeSlotCount({
+        planCode: FREE_PLAN_CODE,
+        maxMatchNumber: purchasedMaxMatchNumber
+      });
+      const competitionMatches = await getMatchesByCompetition(competitionId);
+      const freeIds = computeFreeMatchIds(competitionMatches, slotCount);
+      if (freeIds.length > 0) {
+        groupPayload.freeMatchIds = freeIds;
+      }
+    }
+
+    await setDoc(groupRef, groupPayload);
     
     // Actualizar el usuario para agregar el grupo
     await updateDoc(userRef, {
