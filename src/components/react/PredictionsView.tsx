@@ -1,9 +1,14 @@
-import { collection, onSnapshot } from 'firebase/firestore';
-import { useEffect, useRef, useState } from 'react';
+import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser } from '../../lib/auth';
 import { db } from '../../lib/firebase';
-import { getGroup } from '../../lib/groups';
+import { getGroup, isGroupAdmin } from '../../lib/groups';
 import { filterFinishedMatches, filterLiveMatches, filterUpcomingMatches } from '../../lib/matches';
+import {
+  computeFreeMatchIds,
+  getFreeSlotCount,
+  isFreeSlotPlan
+} from '../../lib/planLimits';
 import { getUserPrediction, getUserPredictions, savePrediction } from '../../lib/predictions';
 import type { Group, Match, Prediction } from '../../lib/types';
 import { getWhatsappLink } from '../../lib/utils';
@@ -52,6 +57,31 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
 
     return () => unsubscribe();
   }, [group?.competitionId]);
+
+  const user = getCurrentUser();
+
+  useEffect(() => {
+    if (!group || !user || !isFreeSlotPlan(group)) return;
+    if (group.freeMatchIds && group.freeMatchIds.length > 0) return;
+    if (!isGroupAdmin(group, user.uid)) return;
+    const slots = getFreeSlotCount(group);
+    if (slots <= 0 || matches.length === 0) return;
+
+    const ids = computeFreeMatchIds(matches, slots);
+    if (ids.length === 0) return;
+
+    const groupRef = doc(db, 'groups', groupId);
+    updateDoc(groupRef, {
+      freeMatchIds: ids,
+      updatedAt: serverTimestamp()
+    })
+      .then(() => {
+        setGroup((prev) => (prev ? { ...prev, freeMatchIds: ids } : null));
+      })
+      .catch((err) => {
+        console.error('[PredictionsView] No se pudo fijar freeMatchIds:', err);
+      });
+  }, [group, groupId, matches, user]);
 
   const loadData = async () => {
     try {
@@ -102,7 +132,12 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     setSaveError('');
     try {
       await savePrediction(groupId, user.uid, matchId, team1Score, team2Score);
-      
+
+      if (isFreeSlotPlan(group) && !group.freeMatchIds?.length) {
+        const refreshed = await getGroup(groupId);
+        if (refreshed) setGroup(refreshed);
+      }
+
       const prediction = await getUserPrediction(groupId, user.uid, matchId);
       if (prediction) {
         setUserPredictions((prev) => ({ ...prev, [matchId]: prediction }));
@@ -173,10 +208,22 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     { id: 'bonus', label: 'Pronósticos bonus' },
   ];
 
+  const freeSlots = getFreeSlotCount(group);
+  const freeAllowedIds = useMemo(() => {
+    if (!isFreeSlotPlan(group) || freeSlots <= 0) return null;
+    if (group.freeMatchIds?.length) {
+      return new Set(group.freeMatchIds);
+    }
+    return new Set(computeFreeMatchIds(matches, freeSlots));
+  }, [group, matches, freeSlots]);
+
   const getLockMessage = (match: Match): string | undefined => {
-    const maxMatchNumber = Number(group.maxMatchNumber || 0);
-    if (maxMatchNumber > 0 && match.matchNumber > maxMatchNumber) {
-      return `Tu plan actual permite jugar solo hasta el partido ${maxMatchNumber}. Actualiza tu plan para seguir pronosticando.`;
+    if (isFreeSlotPlan(group) && freeAllowedIds && !freeAllowedIds.has(match.id)) {
+      return `La prueba gratuita solo incluye ${freeSlots} partidos fijados para este grupo. Actualiza tu plan para seguir pronosticando.`;
+    }
+    const cap = Number(group.maxMatchNumber || 0);
+    if (!isFreeSlotPlan(group) && cap > 0 && match.matchNumber > cap) {
+      return `Tu plan actual permite jugar solo hasta el partido ${cap}. Actualiza tu plan para seguir pronosticando.`;
     }
     return undefined;
   };
@@ -245,8 +292,17 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
             <div className="mb-4 rounded-lg border border-amber-400/50 bg-amber-500/10 p-3 text-sm text-amber-100">
               <p className="font-semibold">Limite del plan gratuito alcanzado</p>
               <p className="mt-1">
-                Tu plan actual permite pronosticar hasta el partido {maxMatchNumber}. Para seguir
-                jugando en los próximos partidos, actualiza tu plan.{' '}
+                {isFreeSlotPlan(group) ? (
+                  <>
+                    La prueba cubre solo {freeSlots} partidos definidos al crear el grupo (no se suman
+                    otros cuando esos terminan). Para todo el torneo, actualiza tu plan.{' '}
+                  </>
+                ) : (
+                  <>
+                    Tu plan actual permite pronosticar hasta el partido {maxMatchNumber}. Para seguir
+                    jugando en los próximos partidos, actualiza tu plan.{' '}
+                  </>
+                )}
                 <a
                   href={getWhatsappLink(
                     'Hola PollaClub, quiero actualizar mi plan para seguir pronosticando en mi grupo.'

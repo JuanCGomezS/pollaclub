@@ -9,6 +9,21 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const FREE_PLAN_CODE = 'free_3_matches';
+
+/** Misma lógica que `computeFreeMatchIds` en la app (sin importar TS desde src). */
+function computeFreeMatchIdsForScript(
+  matches: { id: string; status?: string; matchNumber?: number }[],
+  slotCount: number
+): string[] {
+  if (slotCount <= 0) return [];
+  return matches
+    .filter((m) => m.status === 'scheduled')
+    .sort((a, b) => (a.matchNumber ?? 0) - (b.matchNumber ?? 0))
+    .slice(0, slotCount)
+    .map((m) => m.id);
+}
+
 function getArgValue(flag: string): string | undefined {
   const index = process.argv.findIndex((arg) => arg === flag);
   if (index === -1) return undefined;
@@ -29,10 +44,10 @@ Required:
 
 Optional:
   --slots               Number of groups user can create with this activation (default: 1)
-  --max-match-number    Max matchNumber enabled for predictions (example: 3 for free trial)
+  --max-match-number    Free: cantidad de partidos de la prueba (defecto 3). Otros: tope por matchNumber.
   --clear-max-match-number
                         Removes purchasedMaxMatchNumber (useful when upgrading from free trial to paid)
-  --free-trial          Shortcut for plan gratuito: free_3_matches, maxParticipants=5, maxMatchNumber=3
+  --free-trial          free_3_matches, 5 participantes; fija freeMatchIds en grupos (1 lectura partidos / grupo)
   --disable-create      If present, keeps canCreateGroups=false even if slots > 0
   --skip-group-sync     If present, only updates users/{uid} (does not update any group document)
   --group-id <id>       If present, only updates groups/<id> (must exist and adminUid must match). Mutually exclusive with --skip-group-sync.
@@ -215,7 +230,7 @@ async function run() {
       console.log(`Updated users/${uid} with activated plan`);
     }
 
-    const groupUpdatePayload = (): Record<string, unknown> => {
+    const buildGroupUpdate = async (groupSnap: any): Promise<Record<string, unknown>> => {
       const groupUpdate: Record<string, unknown> = {
         planCode,
         planName,
@@ -223,10 +238,35 @@ async function run() {
         updatedAt: now
       };
 
+      if (clearMaxMatchNumber) {
+        groupUpdate.maxMatchNumber = admin.firestore.FieldValue.delete();
+        groupUpdate.freeMatchIds = admin.firestore.FieldValue.delete();
+        return groupUpdate;
+      }
+
       if (maxMatchNumber > 0) {
         groupUpdate.maxMatchNumber = maxMatchNumber;
-      } else if (clearMaxMatchNumber) {
-        groupUpdate.maxMatchNumber = admin.firestore.FieldValue.delete();
+      }
+
+      if (planCode !== FREE_PLAN_CODE) {
+        groupUpdate.freeMatchIds = admin.firestore.FieldValue.delete();
+      } else if (maxMatchNumber > 0 && planCode === FREE_PLAN_CODE) {
+        const competitionId = groupSnap.get('competitionId') as string | undefined;
+        if (competitionId) {
+          const matchesSnap = await db
+            .collection('competitions')
+            .doc(competitionId)
+            .collection('matches')
+            .get();
+          const matches: { id: string; status?: string; matchNumber?: number }[] = [];
+          matchesSnap.forEach((d) => {
+            matches.push({ id: d.id, ...d.data() });
+          });
+          const ids = computeFreeMatchIdsForScript(matches, maxMatchNumber);
+          if (ids.length > 0) {
+            groupUpdate.freeMatchIds = ids;
+          }
+        }
       }
 
       return groupUpdate;
@@ -251,7 +291,7 @@ async function run() {
           process.exit(1);
         }
 
-        await groupRef.update(groupUpdatePayload());
+        await groupRef.update(await buildGroupUpdate(groupSnap));
         syncedGroups = 1;
       } else {
         const groupsSnapshot = await db
@@ -260,7 +300,7 @@ async function run() {
           .get();
 
         const updates = groupsSnapshot.docs.map(async (groupDoc) => {
-          await groupDoc.ref.update(groupUpdatePayload());
+          await groupDoc.ref.update(await buildGroupUpdate(groupDoc));
         });
 
         await Promise.all(updates);
