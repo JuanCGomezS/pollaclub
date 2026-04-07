@@ -3,7 +3,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser } from '../../lib/auth';
 import { db } from '../../lib/firebase';
 import { getGroup, isGroupAdmin } from '../../lib/groups';
-import { filterFinishedMatches, filterLiveMatches, filterUpcomingMatches } from '../../lib/matches';
+import {
+  filterFinishedMatches,
+  filterLiveMatches,
+  filterUpcomingMatches,
+  groupMatchesByLocalDayPreservingOrder,
+  sortMatchesByScheduledTime,
+  type MatchSortByTime
+} from '../../lib/matches';
 import {
   computeFreeMatchIds,
   getFreeSlotCount,
@@ -16,6 +23,21 @@ import BonusPredictionsForm from './BonusPredictionsForm';
 import MatchCard from './MatchCard';
 
 export type PredictionsSubTab = 'live' | 'upcoming' | 'finished' | 'bonus';
+
+const FINISHED_MATCH_SORT_STORAGE_KEY = 'pollaClubFinishedMatchSort';
+
+function readStoredMatchSort(): MatchSortByTime {
+  if (typeof window === 'undefined') return 'desc';
+  try {
+    const v = localStorage.getItem(FINISHED_MATCH_SORT_STORAGE_KEY);
+    if (v === 'asc' || v === 'desc') return v;
+    const legacy = localStorage.getItem('pollaClubMatchSort');
+    if (legacy === 'asc' || legacy === 'desc') return legacy;
+  } catch {
+    console.error('Error al leer el orden de partidos finalizados');
+  }
+  return 'desc';
+}
 
 interface PredictionsViewProps {
   groupId: string;
@@ -30,6 +52,18 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
   const [saveError, setSaveError] = useState('');
   const [userPredictions, setUserPredictions] = useState<Record<string, Prediction>>({});
   const [savingPrediction, setSavingPrediction] = useState<string | null>(null);
+  const [finishedMatchSortOrder, setFinishedMatchSortOrder] = useState<MatchSortByTime>(() =>
+    readStoredMatchSort()
+  );
+
+  const setFinishedMatchSortOrderPersisted = (order: MatchSortByTime) => {
+    setFinishedMatchSortOrder(order);
+    try {
+      localStorage.setItem(FINISHED_MATCH_SORT_STORAGE_KEY, order);
+    } catch {
+      console.error('Error al guardar el orden de partidos finalizados');
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -176,9 +210,21 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
     );
   }
 
-  const upcomingMatches = filterUpcomingMatches(matches);
-  const liveMatches = filterLiveMatches(matches);
-  const finishedMatches = filterFinishedMatches(matches);
+  const upcomingMatches = sortMatchesByScheduledTime(filterUpcomingMatches(matches), 'asc');
+  const liveMatches = sortMatchesByScheduledTime(filterLiveMatches(matches), 'asc');
+  const finishedMatches = sortMatchesByScheduledTime(
+    filterFinishedMatches(matches),
+    finishedMatchSortOrder
+  );
+
+  const upcomingDayGroups = useMemo(
+    () => groupMatchesByLocalDayPreservingOrder(upcomingMatches),
+    [upcomingMatches]
+  );
+  const finishedDayGroups = useMemo(
+    () => groupMatchesByLocalDayPreservingOrder(finishedMatches),
+    [finishedMatches]
+  );
 
   const defaultSubTab: PredictionsSubTab =
     liveMatches.length > 0 ? 'live' : upcomingMatches.length > 0 ? 'upcoming' : finishedMatches.length > 0 ? 'finished' : 'bonus';
@@ -261,6 +307,42 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
         ))}
       </nav>
 
+      {subTab === 'finished' && finishedMatches.length > 0 && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <span className="text-sm text-[color:var(--pc-muted)]">Orden</span>
+          <div
+            className="inline-flex rounded-lg border border-[color:var(--pc-main-dark)]/50 p-0.5 bg-[color:var(--pc-surface)]/40"
+            role="group"
+            aria-label="Orden de partidos finalizados por fecha"
+          >
+            <button
+              type="button"
+              onClick={() => setFinishedMatchSortOrderPersisted('desc')}
+              title="Los más recientes arriba"
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition sm:text-sm ${
+                finishedMatchSortOrder === 'desc'
+                  ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] shadow-sm'
+                  : 'text-[color:var(--pc-muted)]/90 hover:text-[color:var(--pc-text-on-dark)]'
+              }`}
+            >
+              Recientes primero
+            </button>
+            <button
+              type="button"
+              onClick={() => setFinishedMatchSortOrderPersisted('asc')}
+              title="Los más antiguos arriba"
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition sm:text-sm ${
+                finishedMatchSortOrder === 'asc'
+                  ? 'bg-[color:var(--pc-main)] text-[color:var(--pc-text-on-dark)] shadow-sm'
+                  : 'text-[color:var(--pc-muted)]/90 hover:text-[color:var(--pc-text-on-dark)]'
+              }`}
+            >
+              Antiguos primero
+            </button>
+          </div>
+        </div>
+      )}
+
       {subTab === 'live' && (
         <section>
           {liveMatches.length > 0 ? (
@@ -318,23 +400,30 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
           )}
 
           {upcomingMatches.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {upcomingMatches.map((match) => (
-                (() => {
-                  const lockMessage = getLockMessage(match);
-                  return (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  groupId={groupId}
-                  group={group!}
-                  userPrediction={userPredictions[match.id]}
-                  onSavePrediction={handleSavePrediction}
-                  isSaving={savingPrediction === match.id}
-                  canEdit={!lockMessage}
-                />
-                  );
-                })()
+            <div className="space-y-8">
+              {upcomingDayGroups.map((dayGroup) => (
+                <div key={dayGroup.dayKey}>
+                  <h3 className="text-base sm:text-lg font-semibold text-[color:var(--pc-text-on-dark)] border-b border-[color:var(--pc-main-dark)]/50 pb-2 mb-4">
+                    {dayGroup.heading}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {dayGroup.matches.map((match) => {
+                      const lockMessage = getLockMessage(match);
+                      return (
+                        <MatchCard
+                          key={match.id}
+                          match={match}
+                          groupId={groupId}
+                          group={group!}
+                          userPrediction={userPredictions[match.id]}
+                          onSavePrediction={handleSavePrediction}
+                          isSaving={savingPrediction === match.id}
+                          canEdit={!lockMessage}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
@@ -348,18 +437,27 @@ export default function PredictionsView({ groupId, group: groupProp }: Predictio
       {subTab === 'finished' && (
         <section>
           {finishedMatches.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {finishedMatches.map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  groupId={groupId}
-                  group={group!}
-                  userPrediction={userPredictions[match.id]}
-                  onSavePrediction={handleSavePrediction}
-                  isSaving={false}
-                  canEdit={false}
-                />
+            <div className="space-y-8">
+              {finishedDayGroups.map((dayGroup) => (
+                <div key={dayGroup.dayKey}>
+                  <h3 className="text-base sm:text-lg font-semibold text-[color:var(--pc-text-on-dark)] border-b border-[color:var(--pc-main-dark)]/50 pb-2 mb-4">
+                    {dayGroup.heading}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {dayGroup.matches.map((match) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        groupId={groupId}
+                        group={group!}
+                        userPrediction={userPredictions[match.id]}
+                        onSavePrediction={handleSavePrediction}
+                        isSaving={false}
+                        canEdit={false}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (

@@ -148,3 +148,74 @@ export function filterLiveMatches(matches: Match[]): Match[] {
 export function filterFinishedMatches(matches: Match[]): Match[] {
   return matches.filter((m) => m.status === 'finished');
 }
+
+export type MatchSortByTime = 'asc' | 'desc';
+
+/** Orden por `scheduledTime`: asc = más antiguos primero, desc = más recientes primero. */
+export function sortMatchesByScheduledTime(matches: Match[], direction: MatchSortByTime): Match[] {
+  const mult = direction === 'asc' ? 1 : -1;
+  return [...matches].sort((a, b) => {
+    const aTime = a.scheduledTime?.toMillis?.() ?? 0;
+    const bTime = b.scheduledTime?.toMillis?.() ?? 0;
+    return mult * (aTime - bTime);
+  });
+}
+
+export interface MatchDayGroup {
+  dayKey: string;
+  heading: string;
+  matches: Match[];
+}
+
+function capitalizeEsWord(s: string): string {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** YYYY-MM-DD en hora local (mismo criterio que `timestamp.toDate()` en la UI). */
+export function getMatchLocalDayKey(match: Match): string | null {
+  const ts = match.scheduledTime;
+  if (!ts || typeof (ts as Timestamp).toDate !== 'function') return null;
+  const d = (ts as Timestamp).toDate();
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${mo}-${day}`;
+}
+
+/** Título tipo «Martes 7 de abril de 2026». */
+export function formatMatchDayHeading(match: Match): string {
+  const ts = match.scheduledTime;
+  if (!ts || typeof (ts as Timestamp).toDate !== 'function') return '';
+  const d = (ts as Timestamp).toDate();
+  const weekday = new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(d);
+  const month = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(d);
+  const dayNum = d.getDate();
+  const year = d.getFullYear();
+  return `${capitalizeEsWord(weekday)} ${dayNum} de ${capitalizeEsWord(month)} de ${year}`;
+}
+
+/**
+ * Agrupa por día local manteniendo el orden de la lista (orden del tab: asc/desc).
+ */
+export function groupMatchesByLocalDayPreservingOrder(matches: Match[]): MatchDayGroup[] {
+  const order: string[] = [];
+  const map = new Map<string, Match[]>();
+  for (const m of matches) {
+    const key = getMatchLocalDayKey(m);
+    if (!key) continue;
+    if (!map.has(key)) {
+      order.push(key);
+      map.set(key, []);
+    }
+    map.get(key)!.push(m);
+  }
+  return order.map((dayKey) => {
+    const mlist = map.get(dayKey)!;
+    return {
+      dayKey,
+      heading: formatMatchDayHeading(mlist[0]),
+      matches: mlist
+    };
+  });
+}
