@@ -49,19 +49,30 @@ Optional:
                         Removes purchasedMaxMatchNumber (useful when upgrading from free trial to paid)
   --free-trial          free_3_matches, 5 participantes; fija freeMatchIds en grupos (1 lectura partidos / grupo)
   --disable-create      If present, keeps canCreateGroups=false even if slots > 0
-  --skip-group-sync     If present, only updates users/{uid} (does not update any group document)
-  --group-id <id>       If present, only updates groups/<id> (must exist and adminUid must match). Mutually exclusive with --skip-group-sync.
+  --skip-group-sync     Same as default: only users/{uid} (no group writes)
+  --group-id <id>       Updates only groups/<id> (must exist; adminUid must match)
+  --sync-all-my-groups  Updates EVERY group where adminUid == this user (old bulk behavior; use with care)
+
+By default the script only updates users/{uid}. It does NOT touch group documents unless you pass
+--group-id or --sync-all-my-groups.
 
 Example:
-  npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 1
+  npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 3
   npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_5 --plan-name "Plan 1-5" --max-participants 5 --slots 1 --clear-max-match-number
   npm run activate:user-plan -- --email user@mail.com --free-trial --slots 1 --group-id abc123
+  npm run activate:user-plan -- --email user@mail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 3 --sync-all-my-groups
 
   Creación
 - npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --free-trial --slots 1
+- npx tsx scripts/activate-user-plan.ts --email pollacluboficial@gmail.com --free-trial --slots 3
 - npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 1 --clear-max-match-number
+- npx tsx scripts/activate-user-plan.ts --email pollacluboficial@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 3 --clear-max-match-number
+  (solo actualiza users/*; no toca grupos existentes)
+- npx tsx scripts/activate-user-plan.ts --email pollacluboficial@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 3 --clear-max-match-number --sync-all-my-groups
+  (opcional: reaplica plan a todos los grupos donde es admin; cuidado)
 Actualización
 - npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --free-trial --slots 0 --group-id eXlet9tP9I4UVXYvEZtl
+- npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 0 --group-id xyz789 --clear-max-match-number
 - npx tsx scripts/activate-user-plan.ts --email eslost04@gmail.com --plan-code plan_1_15 --plan-name "Plan 1-15" --max-participants 15 --slots 0 --group-id xyz789 --clear-max-match-number
 `);
   process.exit(1);
@@ -77,6 +88,7 @@ const clearMaxMatchNumber = process.argv.includes('--clear-max-match-number');
 const slotsRaw = getArgValue('--slots');
 const disableCreate = process.argv.includes('--disable-create');
 const skipGroupSync = process.argv.includes('--skip-group-sync');
+const syncAllMyGroups = process.argv.includes('--sync-all-my-groups');
 const groupId = getArgValue('--group-id')?.trim();
 
 if (!email) {
@@ -89,6 +101,16 @@ if (skipGroupSync && groupId) {
   console.error(
     'Error: use either --skip-group-sync or --group-id, not both (--skip-group-sync skips all groups; --group-id targets one group)'
   );
+  process.exit(1);
+}
+
+if (skipGroupSync && syncAllMyGroups) {
+  console.error('Error: --skip-group-sync and --sync-all-my-groups are mutually exclusive');
+  process.exit(1);
+}
+
+if (groupId && syncAllMyGroups) {
+  console.error('Error: use either --group-id or --sync-all-my-groups, not both');
   process.exit(1);
 }
 
@@ -273,7 +295,9 @@ async function run() {
     };
 
     let syncedGroups = 0;
-    if (!skipGroupSync) {
+    const shouldSyncGroups = !skipGroupSync && (Boolean(groupId) || syncAllMyGroups);
+
+    if (shouldSyncGroups) {
       if (groupId) {
         const groupRef = db.collection('groups').doc(groupId);
         const groupSnap = await groupRef.get();
@@ -306,6 +330,10 @@ async function run() {
         await Promise.all(updates);
         syncedGroups = groupsSnapshot.size;
       }
+    } else if (!skipGroupSync && !groupId && !syncAllMyGroups) {
+      console.log(
+        'No group documents updated (default). Use --group-id <id> for one group, or --sync-all-my-groups to update all groups you admin.'
+      );
     }
 
     console.log('--- Activation summary ---');
@@ -320,11 +348,14 @@ async function run() {
     }
     console.log(`groupCreationSlots: ${slots}`);
     console.log(`canCreateGroups: ${canCreateGroups}`);
-    if (groupId && !skipGroupSync) {
+    if (groupId && shouldSyncGroups) {
       console.log(`groupId (targeted sync): ${groupId}`);
     }
+    if (syncAllMyGroups && shouldSyncGroups) {
+      console.log('sync: all groups where adminUid matches');
+    }
     console.log(
-      `groupsSynced: ${skipGroupSync ? 'skipped' : syncedGroups}${groupId && !skipGroupSync ? ' (single group)' : skipGroupSync ? '' : ' (all where adminUid matches)'}`
+      `groupsSynced: ${!shouldSyncGroups ? (skipGroupSync ? 'skipped (--skip-group-sync)' : 'none (default)') : syncedGroups}${groupId && shouldSyncGroups ? ' (single group)' : syncAllMyGroups && shouldSyncGroups ? ' (all admin groups)' : ''}`
     );
     process.exit(0);
   } catch (error: any) {
